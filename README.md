@@ -1,4 +1,4 @@
-![pretty render](https://imgur.com/NSSBL3S)
+![pretty render](https://i.imgur.com/NSSBL3S.png)
 
 ## Installation
 
