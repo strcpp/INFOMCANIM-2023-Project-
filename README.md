@@ -1,4 +1,4 @@
-# Installation
+## Installation
 
 ### Linux/MacOS
 ```sh
@@ -9,7 +9,7 @@ pip install -r requirements.txt
 python -m pip install -r requirements.txt
 ```
 
-# Run
+## Run
 ```sh
 python src/main.py
 ```
