@@ -1,3 +1,5 @@
+![pretty render](https://imgur.com/NSSBL3S)
+
 ## Installation
 
 ### Linux/MacOS
