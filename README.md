@@ -8,3 +8,8 @@ pip install -r requirements.txt
 ```sh
 python -m pip install -r requirements.txt
 ```
+
+# Run
+```sh
+python src/main.py
+```
