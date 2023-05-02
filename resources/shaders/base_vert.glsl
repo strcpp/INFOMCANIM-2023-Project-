@@ -2,7 +2,7 @@
 
 in vec3  in_position;
 in vec3  in_normal;
-in vec2  in_texcoord_0;;
+in vec2  in_texcoord_0;
 
 out vec2 tex_coords;
 out vec3 normal;

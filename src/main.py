@@ -11,7 +11,7 @@ from moderngl_window.integrations.imgui import ModernglWindowRenderer
 
 class App(glw.WindowConfig):
     title = "Computer anim. project"
-    gl_version = (4, 5)
+    gl_version = (3, 3)
     window_size = (1600, 800)
     aspect_ratio = None
     resource_dir = (pathlib.Path(__file__).parent.parent / "resources").resolve()
