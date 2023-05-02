@@ -4,107 +4,55 @@ from pygltflib import *
 import numpy as np
 import struct
 import os
+from loaders.gltf_loader_helpers import *
 
 # helper class for loading gltf files
 class GLTFLoader(Loader):
 
-    def get_positions_data(self, gltf, primitive):
-        positions_accessor = gltf.accessors[primitive.attributes.POSITION]
-        positions_buffer_view = gltf.bufferViews[positions_accessor.bufferView]
-        positions_buffer = gltf.buffers[positions_buffer_view.buffer]
-        positions_data = gltf.get_data_from_buffer_uri(positions_buffer.uri)
+    def get_accessor_data(self, gltf, accessor, dtype):
+        buffer_view = gltf.bufferViews[accessor.bufferView]
+        buffer = gltf.buffers[buffer_view.buffer]
+        data = gltf.get_data_from_buffer_uri(buffer.uri)
 
-        vertices = []
-        for i in range(positions_accessor.count):
-            index = positions_buffer_view.byteOffset + positions_accessor.byteOffset + i * 12
-            d = positions_data[index:index+12]
-            v = struct.unpack("<fff", d)
-            vertices.append(v)
+        byte_offset = buffer_view.byteOffset + accessor.byteOffset
+        dtype_format = accessor_type_fmt(accessor)
+        component_size = struct.calcsize(dtype_format)
 
-        return np.array(vertices, dtype='f4').reshape(-1, 3)
+        values = []
 
-    def get_normals_data(self, gltf, primitive):
-        normals_accessor = gltf.accessors[primitive.attributes.NORMAL]
-        normals_buffer_view = gltf.bufferViews[normals_accessor.bufferView]
-        normals_buffer = gltf.buffers[normals_buffer_view.buffer]
-        normals_data = gltf.get_data_from_buffer_uri(normals_buffer.uri)
+        for i in range(accessor.count):
+            start = byte_offset + i * component_size
+            end = start + component_size
+            chunk = data[start:end]
+            value = struct.unpack(dtype_format, chunk)
 
-        normals = []
-        for i in range(normals_accessor.count):
-            index = normals_buffer_view.byteOffset + normals_accessor.byteOffset + i * 12
-            d = normals_data[index:index+12]
-            v = struct.unpack("<fff", d)
-            normals.append(v)
+            values.append(value)
 
-        return np.array(normals, dtype='f4').reshape(-1, 3)
+        return np.array(values, dtype=dtype).reshape(-1, accessor_type_count(accessor))
 
-    def get_texcoords_data(self, gltf, primitive):
-        if primitive.attributes.TEXCOORD_0:
-            texcoords_accessor = gltf.accessors[primitive.attributes.TEXCOORD_0]
-            texcoords_buffer_view = gltf.bufferViews[texcoords_accessor.bufferView]
-            texcoords_buffer = gltf.buffers[texcoords_buffer_view.buffer]
-            texcoords_data = gltf.get_data_from_buffer_uri(texcoords_buffer.uri)
-
-            texcoords = []
-            for i in range(texcoords_accessor.count):
-                index = texcoords_buffer_view.byteOffset + texcoords_accessor.byteOffset + i * 8
-                d = texcoords_data[index:index+8]
-                v = struct.unpack("<ff", d)
-                texcoords.append(v)
-
-            texcoords = [(u, 1 - v) for u, v in texcoords]
-        else:
-            texcoords = [(0.0, 0.0) for _ in range(len(vertices))]
-        
-        return np.array(texcoords, dtype='f4').reshape(-1, 2)
-
-    def get_indices_data(self, gltf, primitive):
-        indices_accessor = gltf.accessors[primitive.indices]
-        indices_buffer_view = gltf.bufferViews[indices_accessor.bufferView]
-        indices_buffer = gltf.buffers[indices_buffer_view.buffer]
-        indices_data = gltf.get_data_from_buffer_uri(indices_buffer.uri)
-
-        indices = []
-        for i in range(indices_accessor.count):
-            if indices_accessor.componentType == UNSIGNED_INT:
-                offset = 4
-                stype = "<I"
-            elif indices_accessor.componentType == UNSIGNED_SHORT:
-                offset = 2
-                stype = "<H"
-            elif indices_accessor.componentType == UNSIGNED_BYTE:
-                offset = 1
-                stype = "<B"
-
-            index = indices_buffer_view.byteOffset + indices_accessor.byteOffset + i * offset
-            idx = struct.unpack(stype, indices_data[index:index+offset])[0]
-            indices.append(idx)
-
-        return np.array(indices, dtype='i4')
 
     def from_file(self, file_path):
         gltf = GLTF2().load(file_path)
         
         programs = Shaders.instance()
         prog = programs.get('base')
-
         mesh = gltf.meshes[gltf.scenes[gltf.scene].nodes[0]]
         commands = []
 
         for primitive in mesh.primitives:
 
-            vertices = self.get_positions_data(gltf, primitive)
-            normals = self.get_normals_data(gltf, primitive)
-            texcoords = self.get_texcoords_data(gltf, primitive)
-            indices = self.get_indices_data(gltf, primitive)
+            positions_accessor = gltf.accessors[primitive.attributes.POSITION]
+            positions = self.get_accessor_data(gltf, positions_accessor, 'f4')
+
+            normals_accessor = gltf.accessors[primitive.attributes.NORMAL]
+            normals = self.get_accessor_data(gltf, normals_accessor, 'f4')
             
-            vertex_data = np.hstack((vertices, normals, texcoords))
-
-            vbo = self.app.ctx.buffer(vertex_data.astype('f4'))
-            ibo = self.app.ctx.buffer(indices)
-
             texture = None
-            if(primitive.attributes.TEXCOORD_0):
+            if primitive.attributes.TEXCOORD_0:
+                texcoords_accessor = gltf.accessors[primitive.attributes.TEXCOORD_0]
+                texcoords = self.get_accessor_data(gltf, texcoords_accessor, 'f4')
+                texcoords = [(u, 1 - v) for u, v in texcoords]
+
                 # Load the texture
                 material = gltf.materials[primitive.material]
                 texture_index = material.pbrMetallicRoughness.baseColorTexture.index
@@ -112,6 +60,16 @@ class GLTFLoader(Loader):
                 image = gltf.images[texture.source]
                 texture_path = os.path.join(os.path.dirname(file_path), image.uri)
                 texture = self.app.load_texture_2d(texture_path)
+            else:
+                texcoords = [(0.0, 0.0) for _ in range(len(positions))]
+
+            indices_accessor = gltf.accessors[primitive.indices]
+            indices = self.get_accessor_data(gltf, indices_accessor, 'i4')
+            
+            vertex_data = np.hstack((positions, normals, texcoords))
+
+            vbo = self.app.ctx.buffer(vertex_data.astype('f4'))
+            ibo = self.app.ctx.buffer(indices)
 
             # Create VAO
             vao_content = [
