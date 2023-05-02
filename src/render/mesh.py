@@ -20,10 +20,8 @@ class Mesh():
 
         self.app = app
         self.commands = {}
-        self.textures = {}
 
         models_path = os.path.join(os.path.dirname(__file__), '../../resources/models')
-        textures_path = os.path.join(os.path.dirname(__file__), '../../resources/textures')
 
         # load all models
         for root, dirs, files in os.walk(models_path):

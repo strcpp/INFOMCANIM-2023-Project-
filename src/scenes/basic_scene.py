@@ -6,7 +6,7 @@ import imgui
 
 class BasicScene(Scene):
     def load(self):
-        self.add_entity(Model(self.app, 'Vampire'))
+        self.add_entity(Model(self.app, 'AnimatedCube'))
 
         self.light = Light(
             position=Vector3([5., 5., 5.], dtype='f4'), 
