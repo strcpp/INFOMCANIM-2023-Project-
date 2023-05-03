@@ -1,10 +1,13 @@
 from render.model import Model
+from render.lines import Lines
 from scenes.scene import Scene
 from pyrr import quaternion as q, Matrix44, Vector3
 from light import Light
 import imgui
+import numpy as np
 
 class BasicScene(Scene):
+
     def load(self):
         self.add_entity(Model(self.app, 'Vampire'))
 
@@ -31,13 +34,11 @@ class BasicScene(Scene):
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
 
+ 
         imgui.end()
         imgui.render()
 
         self.app.imgui.render(imgui.get_draw_data())
-
-    def handle_select_animation(self, selected_animation):
-        pass
 
     def render(self):
         for entity in self.entities:

@@ -30,10 +30,49 @@ class GLTFLoader(Loader):
 
         return np.array(values, dtype=dtype).reshape(-1, accessor_type_count(accessor))
 
+    def get_animations(self, gltf):
+        animations = []
+
+        for animation in gltf.animations:
+            channels = {}
+
+            for channel in animation.channels:
+                target_node = channel.target.node
+                path = channel.target.path
+
+                sampler = animation.samplers[channel.sampler]
+                input_accessor = gltf.accessors[sampler.input]
+                output_accessor = gltf.accessors[sampler.output]
+
+                input_data = self.get_accessor_data(gltf, input_accessor, 'f4')
+                output_data = self.get_accessor_data(gltf, output_accessor, 'f4')
+
+                keyframes = [(timestamp[0], value) for timestamp, value in zip(input_data, output_data)]
+                if(target_node == 0): print("hi")
+                if target_node not in channels:
+                    channels[target_node] = {
+                        'rotations': [],
+                        'translations': [],
+                        'scales': [],
+                        'interpolation': sampler.interpolation
+                    }
+
+                if path == "rotation":
+                    channels[target_node]['rotations'] = keyframes
+                elif path == "translation":
+                    channels[target_node]['translations'] = keyframes
+                elif path == "scale":
+                    channels[target_node]['scales'] = keyframes
+
+            animations.append(channels)
+
+        return animations
 
     def from_file(self, file_path):
         gltf = GLTF2().load(file_path)
-        
+
+        animations = self.get_animations(gltf)
+
         programs = Shaders.instance()
         prog = programs.get('base')
         mesh = gltf.meshes[gltf.scenes[gltf.scene].nodes[0]]

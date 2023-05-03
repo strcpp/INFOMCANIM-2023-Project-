@@ -3,6 +3,8 @@ import moderngl as gl
 from render.shaders import Shaders
 from render.mesh import Mesh
 from scenes.basic_scene import BasicScene
+from scenes.lines_scene  import LinesScene
+
 import pathlib
 import numpy as np
 from loaders.gltf_loader import GLTFLoader
@@ -30,14 +32,14 @@ class App(glw.WindowConfig):
         self.loader = GLTFLoader(self)
         
         # initialize all assets
-        Shaders.instance(self.ctx)
+        Shaders.instance(self)
         Mesh.instance(self)
 
         imgui.create_context()
 
         self.imgui = ModernglWindowRenderer(self.wnd)
 
-        self.scene = BasicScene(self)
+        self.scene = LinesScene(self)
         self.scene.load()
 
     def render(self, time, frametime):

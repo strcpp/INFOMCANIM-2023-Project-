@@ -22,12 +22,11 @@ class Mesh():
         self.commands = {}
 
         models_path = os.path.join(os.path.dirname(__file__), '../../resources/models')
-
-        # load all models
+        
+        #load all models
         for root, dirs, files in os.walk(models_path):
             for filename in files:
                 if os.path.splitext(filename)[1] == '.gltf' or os.path.splitext(filename)[1] == '.glb':
                     name = os.path.basename(root)
                     model_file_path = os.path.normpath(os.path.join(root, filename))
                     self.commands[name] = self.app.loader.from_file(model_file_path)
-        
