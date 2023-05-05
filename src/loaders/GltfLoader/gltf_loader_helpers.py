@@ -1,4 +1,6 @@
 import pygltflib as gltf
+import struct
+import numpy as np
 
 def accessor_type_count(accessor):
     if accessor.type == "SCALAR":
@@ -52,3 +54,35 @@ def accessor_type_fmt(accessor):
         return f'<{fmt * 16}'
     else:
         raise ValueError(f"Unknown accessor type: {accessor.type}")
+
+def get_image_data(gltf, bufferView):
+    buffer_view = gltf.bufferViews[bufferView]
+    buffer = gltf.buffers[buffer_view.buffer]
+    data = gltf.get_data_from_buffer_uri(buffer.uri)
+
+    start = buffer_view.byteOffset
+    end = buffer_view.byteLength
+
+    return data[start: start + end]
+
+
+def get_accessor_data(gltf, accessor, dtype):
+    buffer_view = gltf.bufferViews[accessor.bufferView]
+    buffer = gltf.buffers[buffer_view.buffer]
+    data = gltf.get_data_from_buffer_uri(buffer.uri)
+
+    byte_offset = buffer_view.byteOffset + accessor.byteOffset
+    dtype_format = accessor_type_fmt(accessor)
+    component_size = struct.calcsize(dtype_format)
+
+    values = []
+
+    for i in range(accessor.count):
+        start = byte_offset + i * component_size
+        end = start + component_size
+        chunk = data[start:end]
+        value = struct.unpack(dtype_format, chunk)
+
+        values.append(value)
+
+    return np.array(values, dtype=dtype).reshape(-1, accessor_type_count(accessor))

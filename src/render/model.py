@@ -6,11 +6,18 @@ class Model():
     def __init__(self, app, mesh_name):
         meshes = Mesh.instance()
         self.app = app
-        self.commands = meshes.commands[mesh_name]
+        self.commands = meshes.data[mesh_name][0]
+        self.animation = meshes.data[mesh_name][1]
 
         self.translation = Vector3()
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
+
+    def get_bones(self):
+        if(self.animation):
+            return self.animation.root_bone
+        else:
+            None
 
     def get_model_matrix(self, transformation_matrix):
         trans = Matrix44.from_translation(self.translation)

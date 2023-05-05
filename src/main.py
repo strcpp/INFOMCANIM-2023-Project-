@@ -7,7 +7,7 @@ from scenes.lines_scene  import LinesScene
 
 import pathlib
 import numpy as np
-from loaders.gltf_loader import GLTFLoader
+from loaders.GltfLoader import GLTFLoader
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 
@@ -39,7 +39,7 @@ class App(glw.WindowConfig):
 
         self.imgui = ModernglWindowRenderer(self.wnd)
 
-        self.scene = LinesScene(self)
+        self.scene = BasicScene(self)
         self.scene.load()
 
     def render(self, time, frametime):

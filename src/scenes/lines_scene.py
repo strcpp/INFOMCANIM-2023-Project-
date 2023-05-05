@@ -5,6 +5,7 @@ from light import Light
 import imgui
 import numpy as np
 
+
 class LinesScene(Scene):
 
     def load(self):
