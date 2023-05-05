@@ -22,7 +22,6 @@ class Mesh():
         self.data = {}
 
         models_path = os.path.join(os.path.dirname(__file__), '../../resources/models')
-
         for root, dirs, files in os.walk(models_path):
             for filename in files:
                 if os.path.splitext(filename)[1] == '.gltf' or os.path.splitext(filename)[1] == '.glb':

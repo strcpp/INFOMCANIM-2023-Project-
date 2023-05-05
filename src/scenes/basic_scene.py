@@ -22,24 +22,12 @@ def get_bone_connections(bone, parent_position=None):
 
     return bone_connections
 
-def get_bone_connections2(bone):
-
-    if bone.rest_transform is not None:
-        # bone_position = bone.get_global_bind_matrix()[-1, :3]
-
-
-        if bone.children:
-            for child in bone.children:
-               get_bone_connections2(child)
-
-
 class BasicScene(Scene):
 
     def load(self):
         self.add_entity(Model(self.app, 'Vampire'))
         self.bones = self.entities[0].get_bones()
 
-        # Your code block here
         bone_lines = get_bone_connections(self.bones)
 
         self.lines = Lines(self.app, lineWidth=1, lines=bone_lines) 
@@ -61,7 +49,6 @@ class BasicScene(Scene):
         rotation =q.cross(self.entities[0].rotation, q.create_from_y_rotation(angle)) 
         self.entities[0].rotation = rotation
         self.lines.rotation = rotation
-        get_bone_connections2(self.bones)
 
     def render_ui(self):
         imgui.new_frame()
