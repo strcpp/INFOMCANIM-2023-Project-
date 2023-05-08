@@ -4,9 +4,12 @@ import numpy as np
 class Bone:
     def __init__(self,name, inverse_bind_matrix, rest_transform, children=None, current_transform=None, rotations = None, translations = None, scales= None):
         self.name = name
-        self.inverse_bind_matrix = inverse_bind_matrix
-        self.rest_transform =  rest_transform
+        # The current local transformation matrix
         self.current_transform = current_transform if current_transform is not None else rest_transform
+        # Transformation of the bone at the start of the animation, a matrix, might not be necessary
+        self.rest_transform =  rest_transform
+        # The joint offset translation matrix, this determines the pivot point relative to its parent
+        self.inverse_bind_matrix = inverse_bind_matrix
 
         self.children = children
 
@@ -18,6 +21,6 @@ class Bone:
         self.scales = scales
 
 
-    #gets the bine-pose (usually T-pose) world-space matrix.
+    # gets the bone-pose (usually T-pose) world-space matrix.
     def get_global_bind_matrix(self):
         return np.linalg.inv(self.inverse_bind_matrix)
