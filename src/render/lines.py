@@ -4,7 +4,7 @@ from render.shaders import Shaders
 import moderngl
 
 class Lines():
-    def __init__(self, app, lineWidth = 1, color=[0,0,1,1], lines = []):
+    def __init__(self, app, lineWidth = 1, color=[0,0,1,1], lines = []): 
         self.app = app
         self.lineWidth = lineWidth
         self.color = color
@@ -12,12 +12,12 @@ class Lines():
         self.line_prog = programs.get('lines')
         self.lines = lines
 
-        vertex, index = self.build_lines(lines)
-
-        vbo = self.app.ctx.buffer(vertex)
-        ibo = self.app.ctx.buffer(index)
-        self.vao = self.app.ctx.simple_vertex_array(self.line_prog, vbo, "position",
-                                                index_buffer=ibo)
+        vertices, indices = self.build_lines(lines)
+        
+        self.vbo = self.app.ctx.buffer(vertices)
+        self.ibo = self.app.ctx.buffer(indices)
+        self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position",
+                                                index_buffer=self.ibo)
 
         self.translation = Vector3()
         self.rotation = Quaternion()
@@ -43,6 +43,15 @@ class Lines():
         index_data = np.array(indices, dtype=np.uint32)
 
         return vertex_data, index_data
+    
+    def update(self, lines):
+        if len(lines) <= len(self.lines):
+            vertices, indices = self.build_lines(lines)
+            self.vbo.write(vertices)
+            self.ibo.write(indices)
+        else:
+            RunTimeError("lines is bigger than self.lines, not good")
+ 
 
     def get_model_matrix(self):
         trans = Matrix44.from_translation(self.translation)

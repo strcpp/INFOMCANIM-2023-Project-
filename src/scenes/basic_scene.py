@@ -29,8 +29,8 @@ class BasicScene(Scene):
         self.bones = self.entities[0].get_bones()
 
         bone_lines = get_bone_connections(self.bones)
-
         self.lines = Lines(self.app, lineWidth=1, lines=bone_lines) 
+
         self.light = Light(
             position=Vector3([5., 5., 5.], dtype='f4'), 
             color=Vector3([1.0, 1.0, 1.0], dtype='f4')
