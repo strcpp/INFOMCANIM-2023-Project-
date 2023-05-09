@@ -69,5 +69,6 @@ class Lines():
         self.line_prog['model'].write(self.get_model_matrix())
         self.line_prog['view'].write(view_matrix)
         self.line_prog['projection'].write(proj_matrix)
+        self.line_prog['color'].value = self.color
 
         self.vao.render(moderngl.LINES)

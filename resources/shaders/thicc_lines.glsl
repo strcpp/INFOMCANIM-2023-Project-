@@ -18,11 +18,12 @@ void main()
 
 #elif defined FRAGMENT_SHADER
 out vec4 FragColor;
+uniform vec4 color;
 
 
 void main()
 {
-    FragColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);
+    FragColor = vec4(color);
 }
 
 #elif defined GEOMETRY_SHADER
