@@ -11,7 +11,7 @@ def get_bone_connections(bone, parent_position=None):
     bone_connections = []
 
     if bone.rest_transform is not None:
-        bone_position = bone.get_global_bind_matrix()[-1, :3]
+        bone_position = bone.current_transform[-1, :3]
 
         if parent_position is not None:
             bone_connections.append((parent_position, bone_position))
@@ -37,18 +37,24 @@ class BasicScene(Scene):
         )
 
         self.show_skeleton = True 
-        self.show_model = True 
+        self.show_model = True
 
+        self.timestamp = 0.0
 
     def unload(self):
         pass
 
     def update(self, dt):
-        speed = 0.5
-        angle = dt * speed
-        rotation =q.cross(self.entities[0].rotation, q.create_from_y_rotation(angle)) 
-        self.entities[0].rotation = rotation
-        self.lines.rotation = rotation
+        self.timestamp += dt
+        self.bones.update(self.timestamp)
+        bone_lines = get_bone_connections(self.bones)
+        self.lines.update(bone_lines)
+
+        # speed = 0.5
+        # angle = dt * speed
+        # rotation =q.cross(self.entities[0].rotation, q.create_from_y_rotation(angle)) 
+        # self.entities[0].rotation = rotation
+        # self.lines.rotation = rotation
 
     def render_ui(self):
         imgui.new_frame()

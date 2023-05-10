@@ -4,7 +4,7 @@ from render.shaders import Shaders
 import moderngl
 
 class Lines():
-    def __init__(self, app, lineWidth = 1, color=[0,0,1,1], lines = []): 
+    def __init__(self, app, lineWidth = 1, color=[1,0,0,1], lines = []): 
         self.app = app
         self.lineWidth = lineWidth
         self.color = color
