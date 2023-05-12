@@ -7,7 +7,7 @@ class Bone:
         # The current local transformation matrix
         self.current_transform = current_transform if current_transform is not None else rest_transform
         # Transformation of the bone at the start of the animation, a matrix, might not be necessary
-        self.rest_transform =  rest_transform
+        self.rest_transform = rest_transform
         # The joint offset translation matrix, this determines the pivot point relative to its parent
         self.inverse_bind_matrix = inverse_bind_matrix
 
@@ -20,53 +20,41 @@ class Bone:
         self.translations = translations
         self.scales = scales
 
-        self.rci = 0 # rotation channel index
-        self.tci = 0 # translation channel index
-        self.sci = 0 # scale channel index
-
-        self.timestamp = 0
-
-    def update(self, dt, parent_world_m = Matrix44(np.identity(4, dtype=np.float32))):
-        self.timestamp += dt
-       
-        if self.timestamp > self.translations[self.tci].timestamp:
-            self.tci += 1
-        if self.timestamp > self.rotations[self.rci].timestamp:
-            self.rci += 1
-        if self.timestamp > self.scales[self.sci].timestamp:
-            self.sci += 1
-
-        # Repeat animation when no keyframes are left
-        # This is probably wrong, since some bones could be finished earlier than others if their channels
-        # have a different number of keyframes or timing
-        if self.tci >= len(self.translations) or self.rci >= len(self.rotations) or self.sci >= len(self.scales):
-            self.tci = 0
-            self.rci = 0
-            self.sci = 0
-            self.timestamp = 0
-
+    def set_pose(self, timestamp, parent_world_m = Matrix44(np.identity(4, dtype=np.float32))):
+        translation_index = self.binary_search_keyframe(timestamp, self.translations)
+        rotation_index = self.binary_search_keyframe(timestamp, self.rotations)
+        scale_index = self.binary_search_keyframe(timestamp, self.scales)
+        
         self.current_transform = self.rest_transform
 
-        translation = Matrix44.from_translation(self.translations[self.tci].value)
+        translation = Matrix44.from_translation(self.translations[translation_index].value)
         self.current_transform = self.current_transform * translation
 
-        rotation =  Matrix44.from_quaternion(self.rotations[self.rci].value)
+        rotation =  Matrix44.from_quaternion(self.rotations[rotation_index].value)
         self.current_transform = self.current_transform * rotation
             
-        scale =  Matrix44.from_scale(self.scales[self.sci].value)
+        scale =  Matrix44.from_scale(self.scales[scale_index].value)
         self.current_transform = self.current_transform * scale
 
         self.current_transform = parent_world_m * self.current_transform
 
-        if (self.tci == 0):
-            print(self.rest_transform)
-            print(Matrix44.from_translation(self.translations[0].value))
-            print(Matrix44.from_quaternion(self.rotations[0].value))
-            print(Matrix44.from_scale(self.scales[0].value))
-
         for child in self.children:
-            child.update(dt, self.current_transform)
+            child.set_pose(timestamp, self.current_transform)
 
+    def binary_search_keyframe(self, timestamp, channel):
+        # Find keyframes for this timestamp
+        low = 0
+        high = len(channel)
+        mid = 0
+
+        while low <= high:
+            mid = (high + low) // 2
+            if timestamp > channel[mid].timestamp:
+                low = mid + 1
+            elif timestamp < channel[mid].timestamp:
+                high = mid - 1
+        
+        return high
 
     # gets the bind-pose (usually T-pose) world-space matrix.
     def get_global_bind_matrix(self):

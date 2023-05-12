@@ -32,13 +32,15 @@ def get_inv_bind(gltf, skin):
 def find_root_node( gltf, skin):
     def traverse_node_hierarchy(node_id, skin_joints, parent_transform=None):
         node = gltf.nodes[node_id]
-        node_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
+        if node.name == "Armature":
+            print(node.rotation)
+        current_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
 
         # Multiply by the parent's transform if it exists
-        if parent_transform is not None:
-            current_transform = parent_transform * node_transform
-        else:
-            current_transform = node_transform
+        # if parent_transform is not None:
+        #     current_transform = parent_transform * node_transform
+        # else:
+        #     current_transform = node_transform
 
         if node_id in skin_joints:
             return node_id, parent_transform

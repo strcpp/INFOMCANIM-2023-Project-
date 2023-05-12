@@ -13,6 +13,9 @@ class Model():
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
+    def set_pose(self, timestamp):
+        self.animation.set_pose(timestamp)
+
     def get_bones(self):
         if(self.animation):
             return self.animation.root_bone
