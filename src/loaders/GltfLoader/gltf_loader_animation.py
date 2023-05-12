@@ -8,17 +8,18 @@ from loaders.GltfLoader.gltf_loader_helpers import *
 def build_rest_matrix(node):
     matrix = Matrix44(np.identity(4, dtype=np.float32))
 
-    if node.translation is not None:
-        translation = Matrix44.from_translation(node.translation)
-        matrix = matrix * translation
-
+    if node.scale is not None:
+        scale =  Matrix44.from_scale(node.scale)
+        matrix = matrix *  scale
+        
     if node.rotation is not None:
         rotation =  Matrix44.from_quaternion(node.rotation)
         matrix = matrix * rotation
 
-    if node.scale is not None:
-        scale =  Matrix44.from_scale(node.scale)
-        matrix = matrix *  scale
+    if node.translation is not None:
+        translation = Matrix44.from_translation(node.translation)
+        matrix = matrix * translation
+
 
     return matrix
 

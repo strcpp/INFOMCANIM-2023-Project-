@@ -25,21 +25,21 @@ class Bone:
         rotation_index = self.binary_search_keyframe(timestamp, self.rotations)
         scale_index = self.binary_search_keyframe(timestamp, self.scales)
         
+        translation = Matrix44.from_translation(self.translations[0].value)
+        rotation = Matrix44.from_quaternion(self.rotations[0].value)
+        scale = Matrix44.from_scale(self.scales[0].value)
+        # translation = Matrix44.from_translation(self.translations[translation_index].value)
+        # rotation =  Matrix44.from_quaternion(self.rotations[rotation_index].value)
+        # scale =  Matrix44.from_scale(self.scales[scale_index].value)
+
         self.current_transform = self.rest_transform
 
-        translation = Matrix44.from_translation(self.translations[translation_index].value)
-        self.current_transform = self.current_transform * translation
+        world_matrix = parent_world_m * self.current_transform
 
-        rotation =  Matrix44.from_quaternion(self.rotations[rotation_index].value)
-        self.current_transform = self.current_transform * rotation
-            
-        scale =  Matrix44.from_scale(self.scales[scale_index].value)
-        self.current_transform = self.current_transform * scale
-
-        self.current_transform = parent_world_m * self.current_transform
+        self.current_transform = world_matrix
 
         for child in self.children:
-            child.set_pose(timestamp, self.current_transform)
+            child.set_pose(timestamp, world_matrix)
 
     def binary_search_keyframe(self, timestamp, channel):
         # Find keyframes for this timestamp
