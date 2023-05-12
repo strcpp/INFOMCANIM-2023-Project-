@@ -24,15 +24,26 @@ class Bone:
         self.tci = 0 # translation channel index
         self.sci = 0 # scale channel index
 
+        self.timestamp = 0
 
-    # Assumes timestamp starts at 0 and only increases!
-    def update(self, timestamp, parent_world_m = Matrix44(np.identity(4, dtype=np.float32))):
-        if (timestamp > self.translations[self.tci].timestamp):
+    def update(self, dt, parent_world_m = Matrix44(np.identity(4, dtype=np.float32))):
+        self.timestamp += dt
+       
+        if self.timestamp > self.translations[self.tci].timestamp:
             self.tci += 1
-        if (timestamp > self.rotations[self.rci].timestamp):
+        if self.timestamp > self.rotations[self.rci].timestamp:
             self.rci += 1
-        if (timestamp > self.scales[self.sci].timestamp):
+        if self.timestamp > self.scales[self.sci].timestamp:
             self.sci += 1
+
+        # Repeat animation when no keyframes are left
+        # This is probably wrong, since some bones could be finished earlier than others if their channels
+        # have a different number of keyframes or timing
+        if self.tci >= len(self.translations) or self.rci >= len(self.rotations) or self.sci >= len(self.scales):
+            self.tci = 0
+            self.rci = 0
+            self.sci = 0
+            self.timestamp = 0
 
         self.current_transform = self.rest_transform
 
@@ -54,7 +65,7 @@ class Bone:
             print(Matrix44.from_scale(self.scales[0].value))
 
         for child in self.children:
-            child.update(timestamp, self.current_transform)
+            child.update(dt, self.current_transform)
 
 
     # gets the bind-pose (usually T-pose) world-space matrix.

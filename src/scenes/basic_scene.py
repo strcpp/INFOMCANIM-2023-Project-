@@ -39,14 +39,11 @@ class BasicScene(Scene):
         self.show_skeleton = True 
         self.show_model = True
 
-        self.timestamp = 0.0
-
     def unload(self):
         pass
 
     def update(self, dt):
-        self.timestamp += dt
-        self.bones.update(self.timestamp)
+        self.bones.update(dt)
         bone_lines = get_bone_connections(self.bones)
         self.lines.update(bone_lines)
 
