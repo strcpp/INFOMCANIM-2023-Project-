@@ -10,8 +10,6 @@ class Animation:
         #maybe it's better to store as a list instead? I think this is fine, we have to traverse the hierarchy eventually anyway.
         self.root_bone = root_bone
 
-        self.root_bone.rest_transform = rotate_90_matrix * self.root_bone.rest_transform
-
     def set_pose(self, timestamp):
         t = timestamp % self.duration
         self.root_bone.set_pose(t)
