@@ -78,16 +78,15 @@ def get_bones( gltf, skin):
         bone_dict[node.name] = bone
         return bone
 
-    root_node, transform = find_root_node(gltf, skin)
+    root_node, root_transform = find_root_node(gltf, skin)
     inv_binds = get_inv_bind(gltf, skin)
     root_bone = None
     bone_dict = {}
 
     if(root_node is not None ):
         root_bone = build_bone_hierarchy(gltf, root_node, inv_binds, bone_dict)
-        root_bone.rest_transform = transform * root_bone.rest_transform
         
-    return root_bone, bone_dict
+    return root_bone, root_transform, bone_dict
 
 def get_channels(gltf, i, bone_dict):
     animation = gltf.animations[i]

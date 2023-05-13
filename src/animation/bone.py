@@ -20,33 +20,25 @@ class Bone:
         self.translations = translations
         self.scales = scales
 
-    def set_pose(self, timestamp, parent_world_m = Matrix44(np.identity(4, dtype=np.float32))):
+    def set_pose(self, timestamp, parent_world_transform = Matrix44(np.identity(4, dtype=np.float32))):
         scale_index = self.binary_search_keyframe(timestamp, self.scales)
         rotation_index = self.binary_search_keyframe(timestamp, self.rotations)
         translation_index = self.binary_search_keyframe(timestamp, self.translations)
         
-        # scale = Matrix44.from_scale(self.scales[0].value)
-        # rotation = Matrix44.from_quaternion(self.rotations[0].value)
-        # translation = Matrix44.from_translation(self.translations[0].value).transpose()
-        translation = Matrix44.from_translation(self.translations[translation_index].value).transpose()
-        rotation =  Matrix44.from_quaternion(self.rotations[rotation_index].value)
+        # Currently only uses the first keyframe
+        # Should be linearly/cubicly be interpolated between *_index and *_index + 1
         scale =  Matrix44.from_scale(self.scales[scale_index].value)
+        rotation =  Matrix44.from_quaternion(self.rotations[rotation_index].value)
+        translation = Matrix44.from_translation(self.translations[translation_index].value).transpose()
 
-        # https://github.com/KhronosGroup/glTF-Tutorials/blob/master/gltfTutorial/gltfTutorial_004_ScenesNodes.md
         self.local_transform = scale * rotation * translation
-
-        if self.name == "mixamorig:Hips":
-            root_scale = Matrix44.from_scale([0.01, 0.01, 0.01])
-            root_rotation = Matrix44.from_quaternion([0.707, 0, 0, 0.707])
-            self.local_transform = self.local_transform * root_scale * root_rotation
-
-        self.local_transform = self.local_transform * parent_world_m
+        self.local_transform = self.local_transform * parent_world_transform
 
         for child in self.children:
             child.set_pose(timestamp, self.local_transform)
 
     def binary_search_keyframe(self, timestamp, channel):
-        # Find keyframes for this timestamp
+        # Find keyframes for given timestamp
         low = 0
         high = len(channel)
         mid = 0
