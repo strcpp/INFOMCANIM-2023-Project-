@@ -11,7 +11,7 @@ def get_bone_connections(bone, parent_position=None):
     bone_connections = []
 
     if bone.rest_transform is not None:
-        bone_position = bone.current_transform[-1, :3]
+        bone_position = bone.local_transform[:-1, 3]
 
         if parent_position is not None:
             bone_connections.append((parent_position, bone_position))
@@ -40,6 +40,20 @@ class BasicScene(Scene):
         self.show_model = True
 
         self.timestamp = 0
+
+        # t = Matrix44.from_translation([10,20,30]).transpose()
+        # r = Matrix44.from_quaternion([0.259, 0, 0, 0.966])
+        # s = Matrix44.from_scale([2, 1, .5])
+        # print(t)
+        # print(r)
+        # print(s)
+
+        # m1 = s * r * t
+        # m2 = Matrix44.from_scale([1, 1, 1]) * Matrix44.from_quaternion([0.3, 0,.7070, 0]) * Matrix44.from_translation([5,10,15]).transpose()
+
+        # print(m1)
+        # print(m2)
+        # print(m1 * m2)
 
     def unload(self):
         pass
