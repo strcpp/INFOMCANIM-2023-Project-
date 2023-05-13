@@ -1,27 +1,27 @@
+from abc import abstractmethod
+from render.model import Model
 
-from abc import ABC, abstractmethod
-from render.mesh import Mesh
 
-class Scene():
-    def __init__(self, app):
+class Scene:
+    def __init__(self, app) -> None:
         self.app = app
         self.entities = []
-    
-    def add_entity(self, entity):
+
+    def add_entity(self, entity: Model) -> None:
         self.entities.append(entity)
 
     @abstractmethod
-    def load(self):
-        pass
-    
-    @abstractmethod
-    def unload(self):
+    def load(self) -> None:
         pass
 
     @abstractmethod
-    def update(self, dt):
+    def unload(self) -> None:
         pass
 
     @abstractmethod
-    def render(self):
+    def update(self, dt: float) -> None:
+        pass
+
+    @abstractmethod
+    def render(self) -> None:
         pass

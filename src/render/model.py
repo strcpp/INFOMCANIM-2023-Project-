@@ -1,9 +1,13 @@
 from render.mesh import Mesh
 from pyrr import quaternion as q, Quaternion, Vector3, Matrix44
 import numpy as np
+from typing import Optional
+from animation.bone import Bone
+from light import Light
 
-class Model():
-    def __init__(self, app, mesh_name):
+
+class Model:
+    def __init__(self, app, mesh_name: str) -> None:
         meshes = Mesh.instance()
         self.app = app
         self.commands = meshes.data[mesh_name][0]
@@ -13,16 +17,16 @@ class Model():
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
-    def set_pose(self, timestamp):
+    def set_pose(self, timestamp: float) -> None:
         self.animation.set_pose(timestamp)
 
-    def get_bones(self):
-        if(self.animation):
+    def get_bones(self) -> Optional[Bone]:
+        if self.animation:
             return self.animation.root_bone
         else:
-            None
+            return None
 
-    def get_model_matrix(self, transformation_matrix):
+    def get_model_matrix(self, transformation_matrix: Optional[Matrix44]) -> np.ndarray:
         trans = Matrix44.from_translation(self.translation)
         rot = Matrix44.from_quaternion(self.rotation)
         scale = Matrix44.from_scale(self.scale)
@@ -33,10 +37,10 @@ class Model():
 
         return np.array(model, dtype='f4')
 
-    def draw(self, proj_matrix, view_matrix, light):
+    def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44, light: Light) -> None:
         for i, command in enumerate(self.commands):
             transformation_matrix, prog, texture, vao = command[3], command[2], command[1], command[0]
-            
+
             prog['light.Ia'].write(light.Ia)
             prog['light.Id'].write(light.Id)
             prog['light.Is'].write(light.Is)
@@ -50,5 +54,5 @@ class Model():
 
             if texture is not None:
                 texture.use()
-            
+
             vao.render()

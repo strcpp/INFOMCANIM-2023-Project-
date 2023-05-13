@@ -2,9 +2,11 @@ import numpy as np
 from pyrr import quaternion as q, Quaternion, Vector3, Matrix44
 from render.shaders import Shaders
 import moderngl
+from typing import List, Tuple
 
-class Lines():
-    def __init__(self, app, lineWidth = 1, color=[1,0,0,1], lines = []): 
+
+class Lines:
+    def __init__(self, app, lineWidth: int = 1, color: List[int] = [1, 0, 0, 1], lines: List[Matrix44] = []) -> None:
         self.app = app
         self.lineWidth = lineWidth
         self.color = color
@@ -13,18 +15,17 @@ class Lines():
         self.lines = lines
 
         vertices, indices = self.build_lines(lines)
-        
+
         self.vbo = self.app.ctx.buffer(vertices)
         self.ibo = self.app.ctx.buffer(indices)
         self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position",
-                                                index_buffer=self.ibo)
+                                                    index_buffer=self.ibo)
 
         self.translation = Vector3()
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
-
-    def build_lines(self, lines):
+    def build_lines(self, lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.ndarray]:
         vertices = []
         indices = []
         index_counter = 0
@@ -43,17 +44,16 @@ class Lines():
         index_data = np.array(indices, dtype=np.uint32)
 
         return vertex_data, index_data
-    
-    def update(self, lines):
+
+    def update(self, lines: List[Tuple[Matrix44, Matrix44]]) -> None:
         if len(lines) <= len(self.lines):
             vertices, indices = self.build_lines(lines)
             self.vbo.write(vertices)
             self.ibo.write(indices)
         else:
             RunTimeError("lines is bigger than self.lines, not good")
- 
 
-    def get_model_matrix(self):
+    def get_model_matrix(self) -> np.ndarray:
         trans = Matrix44.from_translation(self.translation)
         rot = Matrix44.from_quaternion(self.rotation)
         scale = Matrix44.from_scale(self.scale)
@@ -61,9 +61,10 @@ class Lines():
 
         return np.array(model, dtype='f4')
 
-    def draw(self, proj_matrix, view_matrix):
+    def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44) -> None:
+
         self.line_prog["img_width"].value = self.app.window_size[0]
-        self.line_prog["img_height"].value =  self.app.window_size[1]
+        self.line_prog["img_height"].value = self.app.window_size[1]
         self.line_prog["line_thickness"].value = self.lineWidth
 
         self.line_prog['model'].write(self.get_model_matrix())

@@ -5,11 +5,12 @@ import numpy as np
 from pygltflib import *
 from loaders.GltfLoader.gltf_loader_helpers import *
 
+
 def build_rest_matrix(node):
     matrix = Matrix44(np.identity(4, dtype=np.float32))
 
     if node.scale is not None:
-        scale =  Matrix44.from_scale(node.scale)
+        scale = Matrix44.from_scale(node.scale)
         matrix = matrix * scale
 
     if node.rotation is not None:
@@ -19,8 +20,9 @@ def build_rest_matrix(node):
     if node.translation is not None:
         translation = Matrix44.from_translation(node.translation).transpose()
         matrix = matrix * translation
-        
+
     return matrix
+
 
 def get_inv_bind(gltf, skin):
     inverse_bind_matrices_accessor = gltf.accessors[skin.inverseBindMatrices]
@@ -29,7 +31,8 @@ def get_inv_bind(gltf, skin):
 
     return {joint: inverse_bind_matrix for joint, inverse_bind_matrix in zip(skin.joints, inverse_bind_matrices)}
 
-def find_root_node( gltf, skin):
+
+def find_root_node(gltf, skin):
     def traverse_node_hierarchy(node_id, skin_joints, parent_transform=None):
         node = gltf.nodes[node_id]
         local_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
@@ -61,8 +64,12 @@ def find_root_node( gltf, skin):
 
     return None, None
 
-def get_bones( gltf, skin):
-    def build_bone_hierarchy(gltf, node_id, inv_binds, bone_dict):
+
+def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]:
+
+    def build_bone_hierarchy(gltf: GLTF2, node_id: int, inv_binds: Dict[int, np.ndarray],
+                             bone_dict: Dict[str, Bone]) -> Bone:
+
         node = gltf.nodes[node_id]
         inverse_bind_matrix = inv_binds.get(node_id, None)
         rest_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
@@ -74,7 +81,8 @@ def get_bones( gltf, skin):
                 child_bone = build_bone_hierarchy(gltf, id, inv_binds, bone_dict)
                 children_bones.append(child_bone)
 
-        bone = Bone(name=node.name, inverse_bind_matrix=inverse_bind_matrix, rest_transform=rest_transform, children=children_bones)
+        bone = Bone(name=node.name, inverse_bind_matrix=inverse_bind_matrix, rest_transform=rest_transform,
+                    children=children_bones)
         bone_dict[node.name] = bone
         return bone
 
@@ -83,12 +91,13 @@ def get_bones( gltf, skin):
     root_bone = None
     bone_dict = {}
 
-    if(root_node is not None ):
+    if root_node is not None:
         root_bone = build_bone_hierarchy(gltf, root_node, inv_binds, bone_dict)
-        
+
     return root_bone, root_transform, bone_dict
 
-def get_channels(gltf, i, bone_dict):
+
+def get_channels(gltf: GLTF2, i: int, bone_dict: Dict[str, Bone]) -> float:
     animation = gltf.animations[i]
     duration = 0.0
 
