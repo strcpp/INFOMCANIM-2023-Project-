@@ -1,10 +1,10 @@
+from pyrr import Vector3
 
 
-class Light():
-    def __init__(self, position, color):
-        self.position = position 
+class Light:
+    def __init__(self, position: Vector3, color: Vector3) -> None:
+        self.position = position
         self.color = color
-
         # just some random values for lights
         self.Ia = 0.2 * self.color
         self.Id = 0.9 * self.color

@@ -1,22 +1,24 @@
 from pyrr import quaternion as q, Matrix44, Vector3, Vector4
-import numpy as np
+from animation.bone import Bone
+from typing import Optional
+
 
 class Animation:
-    def __init__(self, name, duration, root_bone, root_transform):
+    def __init__(self, name: str, duration: float, root_bone: Bone, root_transform: Matrix44) -> None:
         self.name = name
         self.duration = duration
 
-        #storing bones as a node hierarchy,
-        #maybe it's better to store as a list instead? I think this is fine, we have to traverse the hierarchy eventually anyway.
+        # storing bones as a node hierarchy, maybe it's better to store as a list instead? I think this is fine,
+        # we have to traverse the hierarchy eventually anyway.
         self.root_bone = root_bone
         self.root_transform = root_transform
 
-    def set_pose(self, timestamp):
+    def set_pose(self, timestamp: float) -> None:
         t = timestamp % self.duration
         self.root_bone.set_pose(t, self.root_transform)
 
-    #just testing to make sure we're loading the animation data correctly
-    def assert_channels_not_empty(self, bone=None):
+    # just testing to make sure we're loading the animation data correctly
+    def assert_channels_not_empty(self, bone: Optional[Bone] = None) -> None:
         if bone is None:
             bone = self.root_bone
 
