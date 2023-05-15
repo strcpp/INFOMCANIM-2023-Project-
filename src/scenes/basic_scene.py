@@ -73,7 +73,8 @@ class BasicScene(Scene):
         thickness_min = 1
         thickness_max = 15
 
-        _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, thickness_max)
+        _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, 
+                                                     thickness_max)
         self.thickness_value = self.lines.lineWidth
 
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)

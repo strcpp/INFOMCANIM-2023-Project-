@@ -115,7 +115,7 @@ def get_channels(gltf: GLTF2, i: int, bone_dict: Dict[str, Bone]) -> float:
 
         if path == "rotation":
             keyframes = [Keyframe(timestamp[0], Quaternion(value)) for timestamp, value in zip(input_data, output_data)]
-        elif path in ["translation", "scale"]:
+        else:
             keyframes = [Keyframe(timestamp[0], Vector3(value)) for timestamp, value in zip(input_data, output_data)]
 
         duration = max(duration, max(input_data))

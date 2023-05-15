@@ -5,8 +5,33 @@ import moderngl
 from typing import List, Tuple
 
 
+def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.ndarray]:
+    vertices = []
+    indices = []
+    index_counter = 0
+
+    for line in lines:
+        start, end = line
+        vertices.extend(start)
+        vertices.extend(end)
+
+        indices.append(index_counter)
+        indices.append(index_counter + 1)
+
+        index_counter += 2
+
+    vertex_data = np.array(vertices, dtype=np.float32)
+    index_data = np.array(indices, dtype=np.uint32)
+
+    return vertex_data, index_data
+
+
 class Lines:
-    def __init__(self, app, lineWidth: int = 1, color: List[int] = [1, 0, 0, 1], lines: List[Matrix44] = []) -> None:
+    def __init__(self, app, lineWidth: int = 1, color=None, lines=None) -> None:
+        if lines is None:
+            lines = []
+        if color is None:
+            color = [1, 0, 0, 1]
         self.app = app
         self.lineWidth = lineWidth
         self.color = color
@@ -14,7 +39,7 @@ class Lines:
         self.line_prog = programs.get('lines')
         self.lines = lines
 
-        vertices, indices = self.build_lines(lines)
+        vertices, indices = build_lines(lines)
 
         self.vbo = self.app.ctx.buffer(vertices)
         self.ibo = self.app.ctx.buffer(indices)
@@ -25,29 +50,9 @@ class Lines:
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
-    def build_lines(self, lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.ndarray]:
-        vertices = []
-        indices = []
-        index_counter = 0
-
-        for line in lines:
-            start, end = line
-            vertices.extend(start)
-            vertices.extend(end)
-
-            indices.append(index_counter)
-            indices.append(index_counter + 1)
-
-            index_counter += 2
-
-        vertex_data = np.array(vertices, dtype=np.float32)
-        index_data = np.array(indices, dtype=np.uint32)
-
-        return vertex_data, index_data
-
     def update(self, lines: List[Tuple[Matrix44, Matrix44]]) -> None:
         if len(lines) <= len(self.lines):
-            vertices, indices = self.build_lines(lines)
+            vertices, indices = build_lines(lines)
             self.vbo.write(vertices)
             self.ibo.write(indices)
         else:

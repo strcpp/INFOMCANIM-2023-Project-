@@ -8,7 +8,7 @@ import numpy as np
 from loaders.GltfLoader import GLTFLoader
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
-from typing import Any, Dict, Tuple
+from typing import Any, Tuple
 
 
 class App(glw.WindowConfig):
@@ -44,7 +44,7 @@ class App(glw.WindowConfig):
 
     def render(self, time: float, frame_time: float) -> None:
         self.ctx.enable(gl.DEPTH_TEST)
-        self.ctx.clear(color=(0.09, 0.12, 0.23))
+        self.ctx.clear(color=(0.09, 0.12, 0.23, 0))
         self.scene.update(frame_time)
         self.scene.render()
 
