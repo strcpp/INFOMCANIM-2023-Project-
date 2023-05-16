@@ -47,7 +47,7 @@ class App(glw.WindowConfig):
 
     def render(self, time: float, frame_time: float) -> None:
         self.ctx.enable(gl.DEPTH_TEST)
-        self.ctx.clear(color=(0.09, 0.12, 0.23))
+        self.ctx.clear(color=(0.09, 0.12, 0.23, 0))
         self.scene.update(frame_time)
         self.scene.render()
 

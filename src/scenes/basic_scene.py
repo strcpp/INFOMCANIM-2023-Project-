@@ -30,6 +30,7 @@ class BasicScene(Scene):
     show_skeleton = True
     show_model = True
     thickness_value = 1
+    animation_speed = 1
 
     def load(self, model_name: str) -> None:
         self.models = ['Vampire', 'Lady']
@@ -53,11 +54,12 @@ class BasicScene(Scene):
         self.entities.clear()
 
     def update(self, dt: float) -> None:
-        self.timestamp += dt
+        self.timestamp += dt  * self.animation_speed
         self.find(self.current_model).set_pose(self.timestamp)
         bone_lines = get_bone_connections(
              self.find(self.current_model).get_bones()
         )
+
         self.lines.update(bone_lines)
 
         # speed = 0.5
@@ -79,7 +81,8 @@ class BasicScene(Scene):
         thickness_min = 1
         thickness_max = 15
 
-        _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, thickness_max)
+        _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, 
+                                                     thickness_max)
         self.thickness_value = self.lines.lineWidth
 
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
@@ -94,6 +97,9 @@ class BasicScene(Scene):
             selected_model_name = self.models[selected_model]
             if selected_model_name != self.current_model:
                 self.current_model = selected_model_name
+        
+        _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, -2, 2)
+ 
 
         imgui.end()
         imgui.render()

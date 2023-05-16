@@ -2,8 +2,6 @@ from render.shaders import Shaders
 from loaders.loader import Loader
 from pygltflib import *
 import numpy as np
-import struct
-import os
 from loaders.GltfLoader.gltf_loader_helpers import *
 from loaders.GltfLoader.gltf_loader_animation import *
 from PIL import Image
@@ -18,10 +16,9 @@ class GLTFLoader(Loader):
     def from_file(self, file_path: str) -> Tuple[List[Tuple[VertexArray, Texture, Program, None]], Animation]:
         gltf = GLTF2().load(file_path)
 
-        bones = None
         animation = None
         if gltf.animations is not None:
-            # let's just consider the first animation for now (which in our use case is good enough..)
+            # let's just consider the first animation for now (which in our use case is good enough...)
             # adding multiple animations per file is trivial anyway
             animation_id = 0
 
@@ -52,13 +49,13 @@ class GLTFLoader(Loader):
 
                     # Load the texture
                     material = gltf.materials[primitive.material]
-                    if (material.pbrMetallicRoughness.baseColorTexture is not None):
+                    if material.pbrMetallicRoughness.baseColorTexture is not None:
                         # gltf.convert_images(ImageFormat.FILE)
 
                         texture_index = material.pbrMetallicRoughness.baseColorTexture.index
                         texture = gltf.textures[texture_index]
                         image = gltf.images[texture.source]
-                        if (image.uri is None):
+                        if image.uri is None:
                             texture = get_image_data(gltf, image.bufferView)
                         else:
                             texture = gltf.get_data_from_buffer_uri(image.uri)
