@@ -2,7 +2,12 @@ from pyrr import quaternion as q, Matrix44, Vector3, Vector4
 import numpy as np
 from typing import List, Optional
 from animation.keyframe import Keyframe
+from maths import *
 
+#preallocate matrices
+translation = np.identity(4)
+rotation = np.identity(4)
+scale = np.identity(4)
 
 def binary_search_keyframe(timestamp: float, channel: List[Keyframe]) -> int:
     # Find keyframes for given timestamp
@@ -49,12 +54,12 @@ class Bone:
 
         # Currently only uses the first keyframe
         # Should be linearly/cubicly be interpolated between *_index and *_index + 1
-        scale = Matrix44.from_scale(self.scales[scale_index].value)
-        rotation = Matrix44.from_quaternion(self.rotations[rotation_index].value)
-        translation = Matrix44.from_translation(self.translations[translation_index].value).transpose()
+        from_translation(self.translations[translation_index].value, translation)
+        from_quaternion(self.rotations[rotation_index].value, rotation)
+        from_scale(self.scales[scale_index].value, scale)
 
-        self.local_transform = scale * rotation * translation
-        self.local_transform = self.local_transform * parent_world_transform
+        self.local_transform = translation @ rotation @ scale
+        self.local_transform = parent_world_transform @ self.local_transform
 
         for child in self.children:
             child.set_pose(timestamp, self.local_transform)

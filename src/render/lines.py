@@ -4,6 +4,7 @@ from render.shaders import Shaders
 import moderngl
 from typing import List, Tuple
 
+MAX_LINE_BUFFER_SIZE = 2400
 
 class Lines:
     def __init__(self, app, lineWidth: int = 1, color: List[int] = [1, 0, 0, 1], lines: List[Matrix44] = []) -> None:
@@ -16,8 +17,12 @@ class Lines:
 
         vertices, indices = self.build_lines(lines)
 
-        self.vbo = self.app.ctx.buffer(vertices)
-        self.ibo = self.app.ctx.buffer(indices)
+        self.vbo = self.app.ctx.buffer(reserve=MAX_LINE_BUFFER_SIZE, dynamic = True)
+        self.ibo = self.app.ctx.buffer(reserve=MAX_LINE_BUFFER_SIZE, dynamic = True)
+
+        self.vbo.write(vertices)
+        self.ibo.write(indices)
+
         self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position",
                                                     index_buffer=self.ibo)
 
@@ -46,12 +51,11 @@ class Lines:
         return vertex_data, index_data
 
     def update(self, lines: List[Tuple[Matrix44, Matrix44]]) -> None:
-        if len(lines) <= len(self.lines):
-            vertices, indices = self.build_lines(lines)
-            self.vbo.write(vertices)
-            self.ibo.write(indices)
-        else:
-            RunTimeError("lines is bigger than self.lines, not good")
+        vertices, indices = self.build_lines(lines)
+        self.vbo.clear()
+        self.ibo.clear()
+        self.vbo.write(vertices)
+        self.ibo.write(indices)
 
     def get_model_matrix(self) -> np.ndarray:
         trans = Matrix44.from_translation(self.translation)

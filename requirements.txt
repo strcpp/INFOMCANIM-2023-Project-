@@ -4,3 +4,4 @@ numpy
 pygltflib
 imgui
 pyrr
+numba

@@ -1,4 +1,5 @@
 import os
+import time
 """
 This class reads all models/textures from the resources/models folder, 
 and creates corresponding GPU assets for them (vao, textures)
@@ -22,6 +23,7 @@ class Mesh:
         self.app = app
         self.data = {}
 
+        start = time.time()
         models_path = os.path.join(os.path.dirname(__file__), '../../resources/models')
         for root, dirs, files in os.walk(models_path):
             for filename in files:
@@ -29,3 +31,6 @@ class Mesh:
                     name = os.path.basename(root)
                     model_file_path = os.path.normpath(os.path.join(root, filename))
                     self.data[name] = self.app.loader.from_file(model_file_path)
+        end = time.time()
+
+        print("elapsed??: ", end - start)

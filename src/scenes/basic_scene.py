@@ -32,12 +32,16 @@ class BasicScene(Scene):
     thickness_value = 1
 
     def load(self, model_name: str) -> None:
-        self.add_entity(Model(self.app, model_name))
-        self.bones = self.entities[0].get_bones()
+        self.models = ['Vampire', 'Lady']
 
-        bone_lines = get_bone_connections(self.bones)
-        self.lines = Lines(self.app, lineWidth=1, lines=bone_lines)
+        for model in self.models:
+            self.add_entity(model, Model(self.app, model))
+        
+        self.current_model = 'Vampire'
 
+        self.bones = self.find(self.current_model).get_bones()
+
+        self.lines = Lines(self.app, lineWidth=1)
         self.light = Light(
             position=Vector3([5., 5., 5.], dtype='f4'),
             color=Vector3([1.0, 1.0, 1.0], dtype='f4')
@@ -50,8 +54,10 @@ class BasicScene(Scene):
 
     def update(self, dt: float) -> None:
         self.timestamp += dt
-        self.entities[0].set_pose(self.timestamp)
-        bone_lines = get_bone_connections(self.bones)
+        self.find(self.current_model).set_pose(self.timestamp)
+        bone_lines = get_bone_connections(
+             self.find(self.current_model).get_bones()
+        )
         self.lines.update(bone_lines)
 
         # speed = 0.5
@@ -79,45 +85,15 @@ class BasicScene(Scene):
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
         _, self.show_model = imgui.checkbox("Model", self.show_model)
 
-        if imgui.button("Select Model"):
-            if self.show_model_selection:
-                self.show_model_selection = False
-            else:
-                self.show_model_selection = True
 
-        # Select model button
-        if self.show_model_selection:
-            imgui.set_next_window_size(150, 180)
-            button_pos = imgui.get_item_rect_max()
-            imgui.set_next_window_position(button_pos.x - 100, button_pos.y)
-            _, window_is_open = imgui.begin("Select Model", closable=True)
+        imgui.text("Select a model")
 
-            if not window_is_open:
-                self.show_model_selection = False
+        _, selected_model = imgui.combo('##model_combo', self.models.index(self.current_model), self.models)
 
-            imgui.text("Select a model")
-
-            if imgui.button('Clown'):
-                self.unload()
-                self.load('Clown')
-                self.show_model_selection = False
-            if imgui.button('Goblin'):
-                self.unload()
-                self.load('Goblin')
-                self.show_model_selection = False
-            if imgui.button('Lady'):
-                self.unload()
-                self.load('Lady')
-                self.show_model_selection = False
-            if imgui.button('Mouse'):
-                self.unload()
-                self.load('Mouse')
-                self.show_model_selection = False
-            if imgui.button('Vampire'):
-                self.unload()
-                self.load('Vampire')
-                self.show_model_selection = False
-            imgui.end()
+        if selected_model != -1:
+            selected_model_name = self.models[selected_model]
+            if selected_model_name != self.current_model:
+                self.current_model = selected_model_name
 
         imgui.end()
         imgui.render()
@@ -126,12 +102,11 @@ class BasicScene(Scene):
 
     def render(self) -> None:
         if self.show_model:
-            for entity in self.entities:
-                entity.draw(
-                    self.app.camera.projection.matrix,
-                    self.app.camera.matrix,
-                    self.light
-                )
+            self.find(self.current_model).draw(
+                self.app.camera.projection.matrix,
+                self.app.camera.matrix,
+                self.light
+            )
 
         self.render_ui()
         if self.show_skeleton:

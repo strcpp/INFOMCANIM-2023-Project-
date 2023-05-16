@@ -9,7 +9,7 @@ from loaders.GltfLoader import GLTFLoader
 import imgui
 from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from typing import Any, Dict, Tuple
-
+from moderngl_window.text.bitmapped import TextWriter2D
 
 class App(glw.WindowConfig):
     title = "Computer anim. project"
@@ -38,7 +38,10 @@ class App(glw.WindowConfig):
         imgui.create_context()
 
         self.imgui = ModernglWindowRenderer(self.wnd)
+        self.writer = TextWriter2D()
 
+        self.fps_dims = (10, self.window_size[1] - 10)
+        
         self.scene = BasicScene(self)
         self.scene.load('Vampire')
 
@@ -47,6 +50,13 @@ class App(glw.WindowConfig):
         self.ctx.clear(color=(0.09, 0.12, 0.23))
         self.scene.update(frame_time)
         self.scene.render()
+
+        if frame_time != 0:
+            self.writer.text = "{:.2f}".format(1.0 / frame_time)
+        else:
+            self.writer.text = "0"
+
+        self.writer.draw(self.fps_dims, size=20)
 
     def key_event(self, key: int, action: str, modifiers: glw.context.base.keys.KeyModifiers) -> None:
         keys = self.wnd.keys
@@ -81,6 +91,7 @@ class App(glw.WindowConfig):
     def resize(self, width: int, height: int) -> None:
         self.camera.projection.update(aspect_ratio=self.wnd.aspect_ratio)
         self.imgui.resize(width, height)
+        self.fps_dims = (10, height - 10)
 
     def mouse_press_event(self, x: int, y: int, button: int) -> None:
         self.mouse_pressed = True
