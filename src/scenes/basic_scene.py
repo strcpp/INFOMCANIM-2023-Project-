@@ -30,6 +30,7 @@ class BasicScene(Scene):
     show_skeleton = True
     show_model = True
     thickness_value = 1
+    animation_speed = 1
 
     def load(self, model_name: str) -> None:
         self.add_entity(Model(self.app, model_name))
@@ -49,7 +50,7 @@ class BasicScene(Scene):
         self.entities.clear()
 
     def update(self, dt: float) -> None:
-        self.timestamp += dt
+        self.timestamp += dt * self.animation_speed
         self.entities[0].set_pose(self.timestamp)
         bone_lines = get_bone_connections(self.bones)
         self.lines.update(bone_lines)
@@ -80,11 +81,14 @@ class BasicScene(Scene):
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
         _, self.show_model = imgui.checkbox("Model", self.show_model)
 
+        _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, -2, 2)
+        
         if imgui.button("Select Model"):
             if self.show_model_selection:
                 self.show_model_selection = False
             else:
                 self.show_model_selection = True
+
 
         # Select model button
         if self.show_model_selection:
