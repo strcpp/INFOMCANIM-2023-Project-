@@ -51,12 +51,12 @@ def from_quaternion(quat, rotation):
     rotation[1, 0], rotation[1, 1], rotation[1, 2] = m10, m11, m12
     rotation[2, 0], rotation[2, 1], rotation[2, 2] = m20, m21, m22
 
-
+@njit(cache=True)
 def normalize(v):
-    norm = np.linalg.norm(v)
-    if norm == 0:
-        return v
-    return v / norm
+    squared_sum = 0.0
+    for i in range(len(v)):
+        squared_sum += v[i] * v[i]
+    return v / np.sqrt(squared_sum)
 
 
 @njit(cache=True)
@@ -66,11 +66,14 @@ def clip(x, min_val, max_val):
 
 # Implementation from: https://github.com/adamlwgriffiths/Pyrr/blob/f6c8698c48a75f3fb7ad0d47d0ce80a04f87ba2f/pyrr
 # /quaternion.py#L231
+@njit(cache=True)
 def slerp(quat1, quat2, timestamp, timestamp_1, timestamp_2):
 
     slerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
     t = clip(slerp_amount, 0.0, 1.0)
-    dot = np.dot(quat1, quat2)
+    dot = 0.0
+    for i in range(len(quat1)):
+        dot += quat1[i] * quat2[i]
 
     if dot < 0.0:
         dot = -dot
