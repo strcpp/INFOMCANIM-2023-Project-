@@ -10,6 +10,7 @@ translation = np.identity(4)
 rotation = np.identity(4)
 scale = np.identity(4)
 
+
 def binary_search_keyframe(timestamp: float, channel: List[Keyframe]) -> int:
     # Find keyframes for given timestamp
     low = 0
