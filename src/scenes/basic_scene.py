@@ -32,13 +32,14 @@ class BasicScene(Scene):
     thickness_value = 1
     animation_speed = 1
     default_speed = False
+    previous_animation_speed = animation_speed
 
     def load(self) -> None:
         self.models = ['Vampire', 'Lady']
 
         for model in self.models:
             self.add_entity(model, Model(self.app, model))
-        
+
         self.current_model = 'Vampire'
 
         self.bones = self.find(self.current_model).get_bones()
@@ -58,7 +59,7 @@ class BasicScene(Scene):
         self.timestamp += dt * self.animation_speed
         self.find(self.current_model).set_pose(self.timestamp)
         bone_lines = get_bone_connections(
-             self.find(self.current_model).get_bones()
+            self.find(self.current_model).get_bones()
         )
 
         self.lines.update(bone_lines)
@@ -82,8 +83,8 @@ class BasicScene(Scene):
         thickness_min = 1
         thickness_max = 15
 
-        _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, 
-                                                    thickness_max)
+        _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min,
+                                                     thickness_max)
         self.thickness_value = self.lines.lineWidth
 
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
@@ -97,27 +98,31 @@ class BasicScene(Scene):
             selected_model_name = self.models[selected_model]
             if selected_model_name != self.current_model:
                 self.current_model = selected_model_name
-        
+
         _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, -2, 2)
-
-        if imgui.button("Forward"):
-            self.animation_speed = 1
-        imgui.same_line()
-
-        if imgui.button("Backward"):
-            self.animation_speed = -1
 
         # Add Play/Stop button
         if self.animation_speed == 0:
             button_label = "Play"
         else:
             button_label = "Stop"
-        
+
         if imgui.button(button_label):
             if self.animation_speed == 0:
-                self.animation_speed = 1
+                self.animation_speed = self.previous_animation_speed
             else:
+                self.previous_animation_speed = self.animation_speed
                 self.animation_speed = 0
+        imgui.same_line()
+
+        # Play animation forwards
+        if imgui.button("Forward"):
+            self.animation_speed = 1
+        imgui.same_line()
+
+        # Play animation backwards
+        if imgui.button("Backward"):
+            self.animation_speed = -1
 
         imgui.end()
         imgui.render()

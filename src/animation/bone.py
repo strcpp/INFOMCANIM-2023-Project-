@@ -3,7 +3,6 @@ import numpy as np
 from typing import List, Optional
 from animation.keyframe import Keyframe
 from maths import *
-from numba import njit
 
 # preallocate matrices
 translation = np.identity(4)

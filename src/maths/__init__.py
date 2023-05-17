@@ -61,7 +61,7 @@ def normalize(v: np.ndarray) -> np.ndarray:
 
 
 @njit(cache=True)
-def clip(x: float, min_val: float, max_val: float) -> float:
+def clip(x: np.float32, min_val: np.float32, max_val: np.float32) -> float:
     return min(max(x, min_val), max_val)
 
 
@@ -70,7 +70,7 @@ def clip(x: float, min_val: float, max_val: float) -> float:
 @njit(cache=True)
 def slerp(quat1: np.ndarray, quat2: np.ndarray, timestamp: float, timestamp_1: float, timestamp_2: float) -> np.ndarray:
     slerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
-    t = clip(slerp_amount, 0.0, 1.0)
+    t = clip(np.float32(slerp_amount), np.float32(0.0), np.float32(1.0))
 
     dot = 0.0
     for i in range(len(quat1)):
@@ -94,6 +94,6 @@ def slerp(quat1: np.ndarray, quat2: np.ndarray, timestamp: float, timestamp_1: f
 def lerp(vector_1: np.ndarray, vector_2: np.ndarray, timestamp: float, timestamp_1: float,
          timestamp_2: float) -> np.ndarray:
     lerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
-    lerp_amount = clip(lerp_amount, 0.0, 1.0)
+    lerp_amount = clip(np.float32(lerp_amount), np.float32(0.0), np.float32(1.0))
 
     return vector_1 * (1 - lerp_amount) + vector_2 * lerp_amount

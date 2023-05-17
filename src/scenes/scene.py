@@ -1,10 +1,12 @@
 from abc import abstractmethod
 from render.model import Model
 
+
 class Entity:
     def __init__(self, name: str, model: Model):
         self.name = name
         self.model = model
+
 
 class Scene:
     def __init__(self, app) -> None:

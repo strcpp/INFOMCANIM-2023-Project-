@@ -11,6 +11,7 @@ from moderngl_window.integrations.imgui import ModernglWindowRenderer
 from typing import Any, Dict, Tuple
 from moderngl_window.text.bitmapped import TextWriter2D
 
+
 class App(glw.WindowConfig):
     title = "Computer anim. project"
     gl_version = (3, 3)
@@ -41,7 +42,7 @@ class App(glw.WindowConfig):
         self.writer = TextWriter2D()
 
         self.fps_dims = (10, self.window_size[1] - 10)
-        
+
         self.scene = BasicScene(self)
         self.scene.load()
 
