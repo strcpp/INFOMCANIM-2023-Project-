@@ -83,7 +83,7 @@ class BasicScene(Scene):
         thickness_max = 15
 
         _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, 
-                                                     thickness_max)
+                                                    thickness_max)
         self.thickness_value = self.lines.lineWidth
 
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
@@ -102,6 +102,18 @@ class BasicScene(Scene):
 
         if imgui.button("Default Speed"):
             self.animation_speed = 1
+
+        # Add Play/Stop button
+        if self.animation_speed == 0:
+            button_label = "Play"
+        else:
+            button_label = "Stop"
+        
+        if imgui.button(button_label):
+            if self.animation_speed == 0:
+                self.animation_speed = 1
+            else:
+                self.animation_speed = 0
 
         imgui.end()
         imgui.render()
