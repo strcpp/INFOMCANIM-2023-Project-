@@ -6,6 +6,7 @@ from typing import List, Tuple
 
 MAX_LINE_BUFFER_SIZE = 2400
 
+
 def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.ndarray]:
     vertices = []
     indices = []
@@ -42,14 +43,13 @@ class Lines:
 
         vertices, indices = build_lines(lines)
 
-        self.vbo = self.app.ctx.buffer(reserve=MAX_LINE_BUFFER_SIZE, dynamic = True)
-        self.ibo = self.app.ctx.buffer(reserve=MAX_LINE_BUFFER_SIZE, dynamic = True)
+        self.vbo = self.app.ctx.buffer(reserve=MAX_LINE_BUFFER_SIZE, dynamic=True)
+        self.ibo = self.app.ctx.buffer(reserve=MAX_LINE_BUFFER_SIZE, dynamic=True)
 
         self.vbo.write(vertices)
         self.ibo.write(indices)
 
-        self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position",
-                                                    index_buffer=self.ibo)
+        self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position", index_buffer=self.ibo)
 
         self.translation = Vector3()
         self.rotation = Quaternion()

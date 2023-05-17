@@ -3,8 +3,9 @@ import numpy as np
 from typing import List, Optional
 from animation.keyframe import Keyframe
 from maths import *
+from numba import njit
 
-#preallocate matrices
+# preallocate matrices
 translation = np.identity(4)
 rotation = np.identity(4)
 scale = np.identity(4)
@@ -54,9 +55,26 @@ class Bone:
 
         # Currently only uses the first keyframe
         # Should be linearly/cubicly be interpolated between *_index and *_index + 1
-        from_translation(self.translations[translation_index].value, translation)
-        from_quaternion(self.rotations[rotation_index].value, rotation)
-        from_scale(self.scales[scale_index].value, scale)
+        translation_k1 = self.translations[translation_index]
+        translation_k2 = self.translations[translation_index + 1]
+
+        inter_translation = lerp(translation_k1.value, translation_k2.value, timestamp, translation_k1.timestamp,
+                                 translation_k2.timestamp)
+
+        rotation_k1 = self.rotations[rotation_index]
+        rotation_k2 = self.rotations[rotation_index + 1]
+
+        inter_rotation = slerp(rotation_k1.value, rotation_k2.value, timestamp, rotation_k1.timestamp,
+                               rotation_k2.timestamp)
+
+        scale_k1 = self.scales[scale_index]
+        scale_k2 = self.scales[scale_index + 1]
+
+        inter_scale = lerp(scale_k1.value, scale_k2.value, timestamp, scale_k1.timestamp, scale_k2.timestamp)
+
+        from_translation(inter_translation, translation)
+        from_quaternion(inter_rotation, rotation)
+        from_scale(inter_scale, scale)
 
         self.local_transform = translation @ rotation @ scale
         self.local_transform = parent_world_transform @ self.local_transform
