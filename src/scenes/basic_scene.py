@@ -33,7 +33,7 @@ class BasicScene(Scene):
     animation_speed = 1
     default_speed = False
 
-    def load(self, model_name: str) -> None:
+    def load(self) -> None:
         self.models = ['Vampire', 'Lady']
 
         for model in self.models:
@@ -100,8 +100,12 @@ class BasicScene(Scene):
         
         _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, -2, 2)
 
-        if imgui.button("Default Speed"):
+        if imgui.button("Forward"):
             self.animation_speed = 1
+        imgui.same_line()
+
+        if imgui.button("Backward"):
+            self.animation_speed = -1
 
         # Add Play/Stop button
         if self.animation_speed == 0:

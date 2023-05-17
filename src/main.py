@@ -43,7 +43,7 @@ class App(glw.WindowConfig):
         self.fps_dims = (10, self.window_size[1] - 10)
         
         self.scene = BasicScene(self)
-        self.scene.load('Vampire')
+        self.scene.load()
 
     def render(self, time: float, frame_time: float) -> None:
         self.ctx.enable(gl.DEPTH_TEST)
