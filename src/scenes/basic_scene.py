@@ -57,20 +57,26 @@ class BasicScene(Scene):
 
     def update(self, dt: float) -> None:
         model = self.find(self.current_model)
-        self.timestamp += dt * self.animation_speed
-        
-        #Check if the animation reached end
-        if self.timestamp >= model.animation_length:
-            self.timestamp = 0.0
-        
-        model.set_pose(self.timestamp)
-        
-        self.find(self.current_model).set_pose(self.timestamp)
-        bone_lines = get_bone_connections(
-            self.find(self.current_model).get_bones()
-        )
+        animation_length = model.animation_length
 
+        if self.animation_speed > 0:  # Forward animation
+            self.timestamp += dt * self.animation_speed
+
+            # Check if the animation reached the end
+            if self.timestamp >= animation_length:
+                self.timestamp = 0.0
+
+        elif self.animation_speed < 0:  # Backward animation
+            self.timestamp -= dt * abs(self.animation_speed)
+
+            # Check if the animation reached the beginning
+            if self.timestamp < 0:
+                self.timestamp = animation_length
+
+        model.set_pose(self.timestamp)
+        bone_lines = get_bone_connections(model.get_bones())
         self.lines.update(bone_lines)
+
 
         # speed = 0.5
         # angle = dt * speed
@@ -107,7 +113,9 @@ class BasicScene(Scene):
             if selected_model_name != self.current_model:
                 self.current_model = selected_model_name
 
-        _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, -2, 2)
+        min_speed = 0.0  # Set the minimum speed value to 0/ Animation stopped
+        max_speed = 10.0  # Adjust if we want
+        _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, min_speed, max_speed)
 
          # Add a slider for animation length
         animation_length = self.find(self.current_model).animation_length
