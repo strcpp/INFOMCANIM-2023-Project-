@@ -56,7 +56,15 @@ class BasicScene(Scene):
         self.entities.clear()
 
     def update(self, dt: float) -> None:
+        model = self.find(self.current_model)
         self.timestamp += dt * self.animation_speed
+        
+        #Check if the animation reached end
+        if self.timestamp >= model.animation_length:
+            self.timestamp = 0.0
+        
+        model.set_pose(self.timestamp)
+        
         self.find(self.current_model).set_pose(self.timestamp)
         bone_lines = get_bone_connections(
             self.find(self.current_model).get_bones()
@@ -100,6 +108,11 @@ class BasicScene(Scene):
                 self.current_model = selected_model_name
 
         _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, -2, 2)
+
+         # Add a slider for animation length
+        animation_length = self.find(self.current_model).animation_length
+        _, self.timestamp = imgui.slider_float("Animation Length", self.timestamp, 0, animation_length)
+
 
         # Add Play/Stop button
         if self.animation_speed == 0:

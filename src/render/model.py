@@ -1,5 +1,6 @@
+from animation.animation import Animation
 from render.mesh import Mesh
-from pyrr import quaternion as q, Quaternion, Vector3, Matrix44
+from pyrr import Quaternion, Vector3, Matrix44
 import numpy as np
 from typing import Optional
 from animation.bone import Bone
@@ -12,6 +13,7 @@ class Model:
         self.app = app
         self.commands = meshes.data[mesh_name][0]
         self.animation = meshes.data[mesh_name][1]
+        self.animation_length = self.get_animation_length()
 
         self.translation = Vector3()
         self.rotation = Quaternion()
@@ -19,6 +21,13 @@ class Model:
 
     def set_pose(self, timestamp: float) -> None:
         self.animation.set_pose(timestamp)
+
+    def get_animation_length(self) -> float:
+        # Retrieve the animation duration from the loaded animation data
+        if self.animation:
+            return self.animation.duration
+        else:
+            return 0.0
 
     def get_bones(self) -> Optional[Bone]:
         if self.animation:
