@@ -21,6 +21,7 @@ class Shaders:
         self.app = app
         self.shaders['base'] = self.app.load_program("shaders/base.glsl")
         self.shaders['lines'] = self.app.load_program("shaders/thicc_lines.glsl")
+        self.shaders['skybox'] = self.app.load_program("shaders/skybox.glsl")
 
     def get(self, name: str) -> Program:
         return self.shaders[name]

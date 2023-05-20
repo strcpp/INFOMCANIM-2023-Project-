@@ -1,5 +1,6 @@
 from render.model import Model
 from render.lines import Lines
+from render.skybox import Skybox
 from scenes.scene import Scene
 from pyrr import quaternion as q, Matrix44, Vector3, Vector4
 from light import Light
@@ -49,6 +50,8 @@ class BasicScene(Scene):
             position=Vector3([5., 5., 5.], dtype='f4'),
             color=Vector3([1.0, 1.0, 1.0], dtype='f4')
         )
+
+        self.skybox = Skybox(self.app, skybox='yokohama', ext='jpg')
 
         self.timestamp = 0
 
@@ -151,6 +154,7 @@ class BasicScene(Scene):
         self.app.imgui.render(imgui.get_draw_data())
 
     def render(self) -> None:
+        self.skybox.draw(self.app.camera.projection.matrix, self.app.camera.matrix)
         if self.show_model:
             self.find(self.current_model).draw(
                 self.app.camera.projection.matrix,
@@ -159,5 +163,6 @@ class BasicScene(Scene):
             )
 
         self.render_ui()
+
         if self.show_skeleton:
             self.lines.draw(self.app.camera.projection.matrix, self.app.camera.matrix)

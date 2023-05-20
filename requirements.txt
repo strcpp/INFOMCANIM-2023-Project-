@@ -5,3 +5,4 @@ pygltflib
 imgui
 pyrr
 numba
+imageio
