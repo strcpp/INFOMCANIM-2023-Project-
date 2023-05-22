@@ -6,6 +6,7 @@ from pyrr import quaternion as q, Matrix44, Vector3, Vector4
 from light import Light
 import imgui
 from animation.bone import Bone
+import numpy as np
 
 from typing import List, Optional, Tuple
 
@@ -79,7 +80,7 @@ class BasicScene(Scene):
         model.set_pose(self.timestamp)
         bone_lines = get_bone_connections(model.get_bones())
         self.lines.update(bone_lines)
-
+    
 
         # speed = 0.5
         # angle = dt * speed
@@ -87,6 +88,7 @@ class BasicScene(Scene):
         # self.entities[0].rotation = rotation
         # self.lines.rotation = rotation
 
+    
     def render_ui(self) -> None:
         imgui.new_frame()
 
@@ -118,12 +120,38 @@ class BasicScene(Scene):
 
         min_speed = 0.0  # Set the minimum speed value to 0/ Animation stopped
         max_speed = 10.0  # Adjust if we want
-        _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, min_speed, max_speed)
 
+        # Add a color in slider for animation speed
+        speed_color = np.interp(self.animation_speed, [0, max_speed], [0, 1])
+        red = 1.0
+        green = 1.0 - speed_color
+        blue = 0.0
+        slider_color = (red, green, blue, 1.0)  # Ranging from yellow to bright red
+
+        
+        imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, *slider_color)
+        _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, min_speed, max_speed)
+        imgui.pop_style_color()
+        
          # Add a slider for animation length
         animation_length = self.find(self.current_model).animation_length
-        _, self.timestamp = imgui.slider_float("Animation Length", self.timestamp, 0, animation_length)
+        length_color = np.interp(self.timestamp, [0, animation_length], [0, 1])
+        red_2 = length_color
+        green_2 = 0.0
+        blue_2 = 1.0 - length_color
+        slider_color = (red_2, green_2, blue_2, 1.0)  # Ranging from dark blue to bright orange
 
+        imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, *slider_color)
+        _, self.timestamp = imgui.slider_float("Animation Length", self.timestamp, 0, animation_length)
+        imgui.pop_style_color()
+
+         # Modify button color when pressed
+        if self.animation_speed != 0:
+            button_color = imgui.get_style().colors[imgui.COLOR_BUTTON]
+        else:
+            button_color = (0.0, 0.5, 0.0, 1.0)  # Green color
+
+        imgui.push_style_color(imgui.COLOR_BUTTON, *button_color)
 
         # Add Play/Stop button
         if self.animation_speed == 0:
@@ -138,20 +166,47 @@ class BasicScene(Scene):
                 self.previous_animation_speed = self.animation_speed
                 self.animation_speed = 0
         imgui.same_line()
+        imgui.pop_style_color()  # Restore the button color
 
         # Play animation forwards
+        forward_button_color = imgui.get_style().colors[imgui.COLOR_BUTTON]  # Assign the default button color
+
+        if self.animation_speed == 1:
+            forward_button_color = (0.0, 0.5, 0.0, 1.0)  # Green color
+
+        imgui.push_style_color(imgui.COLOR_BUTTON, *forward_button_color)
+
         if imgui.button("Forward"):
-            self.animation_speed = 1
+            if self.animation_speed != 1:  # Check if it is not already active
+                self.animation_speed = 1
+            else:
+                self.animation_speed = self.previous_animation_speed 
+
         imgui.same_line()
+        imgui.pop_style_color()
 
         # Play animation backwards
+        backward_button_color = imgui.get_style().colors[imgui.COLOR_BUTTON]  # Assign the default button color
+
+        if self.animation_speed == -1:
+            backward_button_color = (0.0, 0.5, 0.0, 1.0)  # Green color
+
+        imgui.push_style_color(imgui.COLOR_BUTTON, *backward_button_color)
+
         if imgui.button("Backward"):
-            self.animation_speed = -1
+            if self.animation_speed != -1:  # Check if it is not already active
+                self.animation_speed = -1
+            else:
+                self.animation_speed = self.previous_animation_speed  
+
+        imgui.same_line()
+        imgui.pop_style_color()
 
         imgui.end()
         imgui.render()
 
         self.app.imgui.render(imgui.get_draw_data())
+
 
     def render(self) -> None:
         self.skybox.draw(self.app.camera.projection.matrix, self.app.camera.matrix)
