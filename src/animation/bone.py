@@ -50,7 +50,7 @@ class Bone:
     def set_pose(self, timestamp: float, interpolation_method: str,
                  parent_world_transform: Matrix44 = Matrix44(np.identity(4, dtype=np.float32))) -> None:
                  
-        if(self.scales is not None and self.rotations is not None and self.translations is not None):
+        if self.scales is not None and self.rotations is not None and self.translations is not None:
             if interpolation_method == "linear":
                 translation_index = binary_search_keyframe(timestamp, self.translations)
                 rotation_index = binary_search_keyframe(timestamp, self.rotations)
@@ -58,8 +58,8 @@ class Bone:
 
                 # Currently only uses the first keyframe
                 # Should be linearly/cubicly be interpolated between *_index and *_index + 1
-                translation_k1 = self.translations[0]
-                translation_k2 = self.translations[-1]
+                translation_k1 = self.translations[translation_index]
+                translation_k2 = self.translations[translation_index + 1]
 
                 inter_translation = lerp(translation_k1.value, translation_k2.value, timestamp, translation_k1.timestamp,
                                         translation_k2.timestamp)
@@ -70,8 +70,8 @@ class Bone:
                 inter_rotation = slerp(rotation_k1.value, rotation_k2.value, timestamp, rotation_k1.timestamp,
                                     rotation_k2.timestamp)
 
-                scale_k1 = self.scales[0]
-                scale_k2 = self.scales[-1]
+                scale_k1 = self.scales[scale_index]
+                scale_k2 = self.scales[scale_index + 1]
 
                 inter_scale = lerp(scale_k1.value, scale_k2.value, timestamp, scale_k1.timestamp, scale_k2.timestamp)
 
