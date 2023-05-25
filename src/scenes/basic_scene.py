@@ -35,6 +35,7 @@ class BasicScene(Scene):
     animation_speed = 1
     default_speed = False
     previous_animation_speed = animation_speed
+    interpolation_method = "linear"
 
     def load(self) -> None:
         self.models = ['Vampire', 'Lady', 'Batman', 'Joker']
@@ -77,18 +78,10 @@ class BasicScene(Scene):
             if self.timestamp < 0:
                 self.timestamp = animation_length
 
-        model.set_pose(self.timestamp)
+        model.set_pose(self.timestamp, self.interpolation_method)
         bone_lines = get_bone_connections(model.get_bones())
         self.lines.update(bone_lines)
-    
 
-        # speed = 0.5
-        # angle = dt * speed
-        # rotation =q.cross(self.entities[0].rotation, q.create_from_y_rotation(angle)) 
-        # self.entities[0].rotation = rotation
-        # self.lines.rotation = rotation
-
-    
     def render_ui(self) -> None:
         imgui.new_frame()
 
@@ -128,12 +121,11 @@ class BasicScene(Scene):
         blue = 0.0
         slider_color = (red, green, blue, 1.0)  # Ranging from yellow to bright red
 
-        
         imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, *slider_color)
         _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, min_speed, max_speed)
         imgui.pop_style_color()
-        
-         # Add a slider for animation length
+
+        # Add a slider for animation length
         animation_length = self.find(self.current_model).animation_length
         length_color = np.interp(self.timestamp, [0, animation_length], [0, 1])
         red_2 = length_color
@@ -145,7 +137,7 @@ class BasicScene(Scene):
         _, self.timestamp = imgui.slider_float("Animation Length", self.timestamp, 0, animation_length)
         imgui.pop_style_color()
 
-         # Modify button color when pressed
+        # Modify button color when pressed
         if self.animation_speed != 0:
             button_color = imgui.get_style().colors[imgui.COLOR_BUTTON]
         else:
@@ -180,7 +172,7 @@ class BasicScene(Scene):
             if self.animation_speed != 1:  # Check if it is not already active
                 self.animation_speed = 1
             else:
-                self.animation_speed = self.previous_animation_speed 
+                self.animation_speed = self.previous_animation_speed
 
         imgui.same_line()
         imgui.pop_style_color()
@@ -197,16 +189,35 @@ class BasicScene(Scene):
             if self.animation_speed != -1:  # Check if it is not already active
                 self.animation_speed = -1
             else:
-                self.animation_speed = self.previous_animation_speed  
+                self.animation_speed = self.previous_animation_speed
 
+        imgui.pop_style_color()
+
+        linear_button_color = imgui.get_style().colors[imgui.COLOR_BUTTON]
+        if self.interpolation_method == "linear":
+            linear_button_color = (0.0, 0.5, 0.0, 1.0)
+        imgui.push_style_color(imgui.COLOR_BUTTON, *linear_button_color)
+
+        if imgui.button("Linear"):
+            self.interpolation_method = "linear"
+
+        imgui.pop_style_color()
         imgui.same_line()
+
+        hermite_button_color = imgui.get_style().colors[imgui.COLOR_BUTTON]
+        if self.interpolation_method == "hermite":
+            hermite_button_color = (0.0, 0.5, 0.0, 1.0)
+        imgui.push_style_color(imgui.COLOR_BUTTON, *hermite_button_color)
+
+        if imgui.button("Hermite"):
+            self.interpolation_method = "hermite"
+
         imgui.pop_style_color()
 
         imgui.end()
         imgui.render()
 
         self.app.imgui.render(imgui.get_draw_data())
-
 
     def render(self) -> None:
         self.skybox.draw(self.app.camera.projection.matrix, self.app.camera.matrix)

@@ -19,8 +19,8 @@ class Model:
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
-    def set_pose(self, timestamp: float) -> None:
-        self.animation.set_pose(timestamp)
+    def set_pose(self, timestamp: float, interpolation_method: str) -> None:
+        self.animation.set_pose(timestamp, interpolation_method)
 
     def get_animation_length(self) -> float:
         # Retrieve the animation duration from the loaded animation data

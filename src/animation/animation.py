@@ -13,9 +13,9 @@ class Animation:
         self.root_bone = root_bone
         self.root_transform = root_transform
 
-    def set_pose(self, timestamp: float) -> None:
+    def set_pose(self, timestamp: float, interpolation_method: str) -> None:
         t = timestamp % self.duration
-        self.root_bone.set_pose(t, self.root_transform)
+        self.root_bone.set_pose(t, interpolation_method, self.root_transform)
 
     # just testing to make sure we're loading the animation data correctly
     def assert_channels_not_empty(self, bone: Optional[Bone] = None) -> None:
