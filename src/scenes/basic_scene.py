@@ -37,7 +37,7 @@ class BasicScene(Scene):
     previous_animation_speed = animation_speed
 
     def load(self) -> None:
-        self.models = ['Vampire', 'Lady', 'Batman']
+        self.models = ['Vampire', 'Lady', 'Batman', 'Joker']
 
         for model in self.models:
             self.add_entity(model, Model(self.app, model))

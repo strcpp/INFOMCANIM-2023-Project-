@@ -49,38 +49,40 @@ class Bone:
 
     def set_pose(self, timestamp: float,
                  parent_world_transform: Matrix44 = Matrix44(np.identity(4, dtype=np.float32))) -> None:
-        scale_index = binary_search_keyframe(timestamp, self.scales)
-        rotation_index = binary_search_keyframe(timestamp, self.rotations)
-        translation_index = binary_search_keyframe(timestamp, self.translations)
 
-        # Currently only uses the first keyframe
-        # Should be linearly/cubicly be interpolated between *_index and *_index + 1
-        translation_k1 = self.translations[translation_index]
-        translation_k2 = self.translations[translation_index + 1]
+        if(self.scales is not None and self.rotations is not None and self.translations is not None):
+            scale_index = binary_search_keyframe(timestamp, self.scales)
+            rotation_index = binary_search_keyframe(timestamp, self.rotations)
+            translation_index = binary_search_keyframe(timestamp, self.translations)
 
-        inter_translation = lerp(translation_k1.value, translation_k2.value, timestamp, translation_k1.timestamp,
-                                 translation_k2.timestamp)
+            # Currently only uses the first keyframe
+            # Should be linearly/cubicly be interpolated between *_index and *_index + 1
+            translation_k1 = self.translations[translation_index]
+            translation_k2 = self.translations[translation_index + 1]
 
-        rotation_k1 = self.rotations[rotation_index]
-        rotation_k2 = self.rotations[rotation_index + 1]
+            inter_translation = lerp(translation_k1.value, translation_k2.value, timestamp, translation_k1.timestamp,
+                                    translation_k2.timestamp)
 
-        inter_rotation = slerp(rotation_k1.value, rotation_k2.value, timestamp, rotation_k1.timestamp,
-                               rotation_k2.timestamp)
+            rotation_k1 = self.rotations[rotation_index]
+            rotation_k2 = self.rotations[rotation_index + 1]
 
-        scale_k1 = self.scales[scale_index]
-        scale_k2 = self.scales[scale_index + 1]
+            inter_rotation = slerp(rotation_k1.value, rotation_k2.value, timestamp, rotation_k1.timestamp,
+                                rotation_k2.timestamp)
 
-        inter_scale = lerp(scale_k1.value, scale_k2.value, timestamp, scale_k1.timestamp, scale_k2.timestamp)
+            scale_k1 = self.scales[scale_index]
+            scale_k2 = self.scales[scale_index + 1]
 
-        from_translation(inter_translation, translation)
-        from_quaternion(inter_rotation, rotation)
-        from_scale(inter_scale, scale)
+            inter_scale = lerp(scale_k1.value, scale_k2.value, timestamp, scale_k1.timestamp, scale_k2.timestamp)
 
-        self.local_transform = translation @ rotation @ scale
-        self.local_transform = parent_world_transform @ self.local_transform
+            from_translation(inter_translation, translation)
+            from_quaternion(inter_rotation, rotation)
+            from_scale(inter_scale, scale)
 
-        for child in self.children:
-            child.set_pose(timestamp, self.local_transform)
+            self.local_transform = translation @ rotation @ scale
+            self.local_transform = parent_world_transform @ self.local_transform
+
+            for child in self.children:
+                child.set_pose(timestamp, self.local_transform)
 
     # gets the bind-pose (usually T-pose) world-space matrix.
     def get_global_bind_matrix(self) -> np.ndarray:

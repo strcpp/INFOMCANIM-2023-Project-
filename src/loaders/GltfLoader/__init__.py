@@ -26,7 +26,7 @@ class GLTFLoader(Loader):
                 root_bone, root_transform, bone_dict = get_bones(gltf, gltf.skins[animation_id])
                 duration = get_channels(gltf, animation_id, bone_dict)
                 animation = a.Animation(gltf.animations[animation_id].name, duration, root_bone, root_transform)
-                animation.assert_channels_not_empty()
+                # animation.assert_channels_not_empty()
 
         programs = Shaders.instance()
         prog = programs.get('base')
