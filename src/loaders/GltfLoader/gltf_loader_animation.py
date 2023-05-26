@@ -66,7 +66,6 @@ def find_root_node(gltf, skin):
 
 
 def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]:
-
     def build_bone_hierarchy(gltf: GLTF2, node_id: int, inv_binds: Dict[int, np.ndarray],
                              bone_dict: Dict[str, Bone]) -> Bone:
 

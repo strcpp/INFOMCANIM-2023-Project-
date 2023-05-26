@@ -67,17 +67,38 @@ class GLTFLoader(Loader):
                 else:
                     texcoords = [(0.0, 0.0) for _ in range(len(positions))]
 
+                joint_indices = None
+                joint_weights = None
+
+                if primitive.attributes.JOINTS_0 is not None:
+                    joints_indices_accessor = gltf.accessors[primitive.attributes.JOINTS_0]
+                    joint_indices = get_accessor_data(gltf, joints_indices_accessor, 'i4')
+
+                    assert positions.shape[0] == joint_indices.shape[0]
+
+                if primitive.attributes.WEIGHTS_0 is not None:
+                    joints_weights_accessor = gltf.accessors[primitive.attributes.WEIGHTS_0]
+                    joint_weights = get_accessor_data(gltf, joints_weights_accessor, 'f4')
+
+                    assert positions.shape[0] == joint_weights.shape[0]
+
                 indices_accessor = gltf.accessors[primitive.indices]
                 indices = get_accessor_data(gltf, indices_accessor, 'i4')
 
-                vertex_data = np.hstack((positions, normals, texcoords))
+                joint_indices = np.full((indices.shape[0], 4), -1) if None else joint_indices
+                joint_weights = np.full((indices.shape[0], 4), 0) if None else joint_weights
+
+                #print(positions.shape, joint_indices.shape, joint_weights.shape)
+
+
+                vertex_data = np.hstack((positions, normals, texcoords, joint_indices, joint_weights))
 
                 vbo = self.app.ctx.buffer(vertex_data.astype('f4'))
                 ibo = self.app.ctx.buffer(indices)
 
                 # Create VAO
                 vao_content = [
-                    (vbo, '3f 3f 2f', 'in_position', 'in_normal', 'in_texcoord_0')
+                    (vbo, '3f 3f 2f 4i 4f', 'in_position', 'in_normal', 'in_texcoord_0', 'in_jointsIdx', 'in_jointsWeight')
                 ]
 
                 mesh_node_index = gltf.scenes[gltf.scene].nodes[0]

@@ -6,6 +6,9 @@
 in vec3  in_position;
 in vec3  in_normal;
 in vec2  in_texcoord_0;
+// Skinning
+in ivec4 in_jointsIdx;
+in vec4 in_jointsWeight;
 
 out vec2 tex_coords;
 out vec3 normal;
@@ -13,7 +16,12 @@ out vec3 fragPos;
 
 uniform mat4 model;
 uniform mat4 projection;
-uniform mat4 view;  
+uniform mat4 view;
+
+// Skinning
+const int MAX_BONES = 100;
+const int MAX_BONE_INFLUENCE = 4;
+uniform mat4 jointsMatrices[MAX_BONES];
 
 void main() {
     mat4 modelView = view * model;
