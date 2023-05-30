@@ -29,7 +29,7 @@ class Bone:
     def __init__(self, name: str, inverse_bind_matrix: np.ndarray, rest_transform: Matrix44,
                  children: List['Bone'] = None, local_transform: Optional[Matrix44] = None,
                  rotations: Optional[Keyframe] = None, translations: Optional[Keyframe] = None,
-                 scales: Optional[Keyframe] = None) -> None:
+                 scales: Optional[Keyframe] = None, index: Optional[int] = -1) -> None:
         self.name = name
         # The current local transformation matrix
         self.local_transform = local_transform if local_transform is not None else rest_transform
@@ -46,6 +46,9 @@ class Bone:
         self.rotations = rotations
         self.translations = translations
         self.scales = scales
+
+        # Bone index required for skinning
+        self.index = index
 
     def set_pose(self, timestamp: float, interpolation_method: str,
                  parent_world_transform: Matrix44 = Matrix44(np.identity(4, dtype=np.float32))) -> None:

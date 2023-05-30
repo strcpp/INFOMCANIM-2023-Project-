@@ -85,20 +85,23 @@ class GLTFLoader(Loader):
                 indices_accessor = gltf.accessors[primitive.indices]
                 indices = get_accessor_data(gltf, indices_accessor, 'i4')
 
-                joint_indices = np.full((indices.shape[0], 4), -1) if None else joint_indices
-                joint_weights = np.full((indices.shape[0], 4), 0) if None else joint_weights
+                joint_indices = np.full((indices.shape[0], 4), -1, dtype='i4') if None else joint_indices
+                joint_weights = np.full((indices.shape[0], 4), 0, dtype='f4') if None else joint_weights
 
                 #print(positions.shape, joint_indices.shape, joint_weights.shape)
+                #print(joint_weights)
 
-
-                vertex_data = np.hstack((positions, normals, texcoords, joint_indices, joint_weights))
+                vertex_data = np.hstack((positions, normals, texcoords, joint_weights))
 
                 vbo = self.app.ctx.buffer(vertex_data.astype('f4'))
                 ibo = self.app.ctx.buffer(indices)
 
+                jbo = self.app.ctx.buffer(joint_indices.astype('i4'))
+
                 # Create VAO
                 vao_content = [
-                    (vbo, '3f 3f 2f 4i 4f', 'in_position', 'in_normal', 'in_texcoord_0', 'in_jointsIdx', 'in_jointsWeight')
+                    (vbo, '3f 3f 2f 4f', 'in_position', 'in_normal', 'in_texcoord_0', 'in_jointsWeight'),
+                    (jbo, '4i', 'in_jointsIdx')
                 ]
 
                 mesh_node_index = gltf.scenes[gltf.scene].nodes[0]

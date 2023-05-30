@@ -61,6 +61,10 @@ class Model:
             prog['projection'].write(proj_matrix)
             prog['useTexture'].value = texture is not None
 
+            # self.animation.get_sorted_joints()
+            jointsMats = self.animation.get_sorted_joints()
+            prog['jointsMatrices'].write(jointsMats.astype('f4'))
+
             if texture is not None:
                 texture.use()
 

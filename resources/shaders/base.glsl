@@ -6,9 +6,10 @@
 in vec3  in_position;
 in vec3  in_normal;
 in vec2  in_texcoord_0;
+
 // Skinning
-in ivec4 in_jointsIdx;
 in vec4 in_jointsWeight;
+in ivec4 in_jointsIdx;
 
 out vec2 tex_coords;
 out vec3 normal;
@@ -24,11 +25,33 @@ const int MAX_BONE_INFLUENCE = 4;
 uniform mat4 jointsMatrices[MAX_BONES];
 
 void main() {
-    mat4 modelView = view * model;
-    normal = mat3(transpose(inverse(model))) * normalize(in_normal);
-    fragPos = vec3(model * vec4(in_position, 1.0)); 
 
-    gl_Position = projection*view*model*vec4(in_position, 1.0);
+    //vec4 P = vec4(in_position, 1.f);
+
+    vec4 totalPosition = vec4(0.0f);
+    for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
+    {
+        int boneIdx = in_jointsIdx[i];
+        float weight = in_jointsWeight[i];
+
+        if(boneIdx == -1)
+            continue;
+
+        if(boneIdx >=MAX_BONES)
+        {
+            totalPosition = vec4(in_position, 1.0f);
+            break;
+        }
+
+        vec4 localPosition = jointsMatrices[boneIdx] * vec4(in_position, 1.0f);
+        totalPosition += localPosition * weight;
+        //vec3 localNormal = mat3(finalBonesMatrices[boneIdx]) * norm;
+    }
+
+    normal = mat3(transpose(inverse(model))) * normalize(in_normal);
+    fragPos = vec3(model * totalPosition);
+
+    gl_Position = projection * view * model * totalPosition;
     tex_coords = in_texcoord_0;
 }
 

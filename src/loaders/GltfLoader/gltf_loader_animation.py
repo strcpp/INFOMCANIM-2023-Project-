@@ -25,6 +25,9 @@ def build_rest_matrix(node):
 
 
 def get_inv_bind(gltf, skin):
+
+    print(skin.joints)
+
     inverse_bind_matrices_accessor = gltf.accessors[skin.inverseBindMatrices]
     inverse_bind_matrices = get_accessor_data(gltf, inverse_bind_matrices_accessor, 'f4')
     inverse_bind_matrices = inverse_bind_matrices.reshape(-1, 4, 4)
@@ -70,6 +73,7 @@ def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]
                              bone_dict: Dict[str, Bone]) -> Bone:
 
         node = gltf.nodes[node_id]
+
         inverse_bind_matrix = inv_binds.get(node_id, None)
         rest_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
 
@@ -80,10 +84,14 @@ def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]
                 child_bone = build_bone_hierarchy(gltf, id, inv_binds, bone_dict)
                 children_bones.append(child_bone)
 
+        bone_index = skin.joints.index(node_id) if node_id in skin.joints else -1
+
         bone = Bone(name=node.name, inverse_bind_matrix=inverse_bind_matrix, rest_transform=rest_transform,
-                    children=children_bones)
+                    children=children_bones, index=bone_index)
         bone_dict[node.name] = bone
         return bone
+
+    #print(skin.joints, len(skin.joints))
 
     root_node, root_transform = find_root_node(gltf, skin)
     inv_binds = get_inv_bind(gltf, skin)
