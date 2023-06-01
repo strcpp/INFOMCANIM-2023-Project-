@@ -73,11 +73,11 @@ class Model:
             prog['useTexture'].value = texture is not None
 
             # self.animation.get_sorted_joints()
-        if self.animation:
-            jointsMats = self.animation.get_sorted_joints()
-            prog['numBones'].value = len(jointsMats)  # Pass the number of bones to the shader
-            prog['numBoneInfluences'].value = min(len(jointsMats), MAX_BONES)  # Limit the number of bone influences
-            prog['jointsMatrices'].write(jointsMats.astype('f4'))
+            if self.animation:
+                jointsMats = self.animation.get_sorted_joints()
+                prog['numBones'].value = len(jointsMats)  # Pass the number of bones to the shader
+                prog['numBoneInfluences'].value = min(len(jointsMats), MAX_BONES)  # Limit the number of bone influences
+                prog['jointsMatrices'].write(jointsMats.tobytes())
 
             if texture is not None:
                 texture.use()

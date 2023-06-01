@@ -22,7 +22,11 @@ class Animation:
         while len(nodes) > 0:
             current_node, parent_transform = nodes.pop()
             if current_node.index > -1:
-                joint_matrix = parent_transform @ current_node.inverse_bind_matrix @ current_node.local_transform
+
+                joint_matrix =  np.transpose(current_node.inverse_bind_matrix)
+                joint_matrix = current_node.local_transform @ joint_matrix
+                joint_matrix = np.transpose(joint_matrix)
+
                 pair = (current_node.index, joint_matrix)
                 joints.append(pair)
 
