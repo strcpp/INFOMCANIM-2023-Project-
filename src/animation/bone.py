@@ -88,7 +88,7 @@ class Bone:
                 for child in self.children:
                     child.set_pose(timestamp, interpolation_method, self.local_transform)
 
-            elif interpolation_method == "hermite":  # Hermite curve with smooth tangents
+            elif interpolation_method == "hermite":  # Hermite curve with smooth tangents (Lecture 2 - Slide 52)
                 coeff_array = np.array([[2.0, -2.0, 1.0, 1.0],
                                         [-3.0, 3.0, -2.0, -1.0],
                                         [0.0, 0.0, 1.0, 0.0],
