@@ -6,6 +6,9 @@ from typing import Optional
 from animation.bone import Bone
 from light import Light
 
+# Define MAX_BONES
+MAX_BONES = 100
+
 
 class Model:
     def __init__(self, app, mesh_name: str) -> None:
@@ -14,6 +17,13 @@ class Model:
         self.commands = meshes.data[mesh_name][0]
         self.animation = meshes.data[mesh_name][1]
         self.animation_length = self.get_animation_length()
+
+        # Check if the skeleton is properly connected
+        if self.animation:
+            if self.animation.root_bone is None:
+                raise ValueError("The root bone of the skeleton is not set.")
+        else:
+            raise ValueError("No animation data is available.")
 
         self.translation = Vector3()
         self.rotation = Quaternion()
@@ -34,10 +44,10 @@ class Model:
             return self.animation.root_bone
         else:
             return None
-
+    
     def get_model_matrix(self, transformation_matrix: Optional[Matrix44]) -> np.ndarray:
         trans = Matrix44.from_translation(self.translation)
-        rot = Matrix44.from_quaternion(self.rotation)
+        rot = Matrix44.from_quaternion(Quaternion(self.rotation))
         scale = Matrix44.from_scale(self.scale)
         model = trans * rot * scale
 
@@ -45,6 +55,7 @@ class Model:
             model = model * transformation_matrix
 
         return np.array(model, dtype='f4')
+
 
     def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44, light: Light) -> None:
         for i, command in enumerate(self.commands):
@@ -62,7 +73,10 @@ class Model:
             prog['useTexture'].value = texture is not None
 
             # self.animation.get_sorted_joints()
+        if self.animation:
             jointsMats = self.animation.get_sorted_joints()
+            prog['numBones'].value = len(jointsMats)  # Pass the number of bones to the shader
+            prog['numBoneInfluences'].value = min(len(jointsMats), MAX_BONES)  # Limit the number of bone influences
             prog['jointsMatrices'].write(jointsMats.astype('f4'))
 
             if texture is not None:
