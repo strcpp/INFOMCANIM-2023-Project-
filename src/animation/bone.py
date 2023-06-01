@@ -88,7 +88,7 @@ class Bone:
                 for child in self.children:
                     child.set_pose(timestamp, interpolation_method, self.local_transform)
 
-            elif interpolation_method == "hermite":  # Hermite curve with smooth tangents (Lecture 2 - Slide 52)
+            elif interpolation_method == "hermite":
                 coeff_array = np.array([[2.0, -2.0, 1.0, 1.0],
                                         [-3.0, 3.0, -2.0, -1.0],
                                         [0.0, 0.0, 1.0, 0.0],
@@ -103,8 +103,7 @@ class Bone:
                 rotation_p1 = self.rotations[index + 1]
                 scale_p1 = self.scales[index + 1]
 
-                tangent_translation = (translation_p1.value - translation_p0.value) / (translation_p1.timestamp -
-                                                                                       translation_p0.timestamp)
+                tangent_translation = np.array([0, 0, 0])
 
                 timestamp_norm = (timestamp - translation_p0.timestamp) / (translation_p1.timestamp -
                                                                            translation_p0.timestamp)
@@ -119,8 +118,7 @@ class Bone:
                                               timestamp_norm ** 2,
                                               timestamp_norm, 1.0]) @ coeff_array @ hermite_array
 
-                tangent_rotation = (rotation_p1.value - rotation_p0.value) / (rotation_p1.timestamp -
-                                                                              rotation_p0.timestamp)
+                tangent_rotation = np.array([0, 0, 0, 0])
 
                 hermite_array = np.array([rotation_p0.value,
                                           rotation_p1.value,
@@ -131,7 +129,7 @@ class Bone:
                                            timestamp_norm ** 2,
                                            timestamp_norm, 1.0]) @ coeff_array @ hermite_array
 
-                tangent_scale = (scale_p1.value - scale_p0.value) / (scale_p1.timestamp - scale_p0.timestamp)
+                tangent_scale =  np.array([0, 0, 0])
 
                 hermite_array = np.array([scale_p0.value,
                                           scale_p1.value,
