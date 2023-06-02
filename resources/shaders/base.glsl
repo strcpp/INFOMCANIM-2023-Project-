@@ -2,7 +2,6 @@
 
 #if defined VERTEX_SHADER
 
-
 in vec3  in_position;
 in vec3  in_normal;
 in vec2  in_texcoord_0;
@@ -21,35 +20,30 @@ uniform mat4 view;
 
 // Skinning
 const int MAX_BONES = 100;
-const int MAX_BONE_INFLUENCE = 4;
+uniform int numBones;
+uniform int numBoneInfluences;
 uniform mat4 jointsMatrices[MAX_BONES];
 
 void main() {
+    vec4 totalPosition = vec4(0.0);
+    vec4 tempPosition = vec4(in_position, 1.0);
 
-    //vec4 P = vec4(in_position, 1.f);
-
-    vec4 totalPosition = vec4(0.0f);
-    for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++)
-    {
+    for (int i = 0; i < numBoneInfluences; i++) {
         int boneIdx = in_jointsIdx[i];
         float weight = in_jointsWeight[i];
 
-        if(boneIdx == -1)
+        if (boneIdx == -1)
             continue;
 
-        if(boneIdx >=MAX_BONES)
-        {
-            totalPosition = vec4(in_position, 1.0f);
+        if (boneIdx >= numBones)
             break;
-        }
 
-        vec4 localPosition = jointsMatrices[boneIdx] * vec4(in_position, 1.0f);
+        vec4 localPosition = jointsMatrices[boneIdx] * tempPosition;
         totalPosition += localPosition * weight;
-        //vec3 localNormal = mat3(finalBonesMatrices[boneIdx]) * norm;
     }
 
     normal = mat3(transpose(inverse(model))) * normalize(in_normal);
-    fragPos = vec3(model * totalPosition);
+    fragPos = vec3(model * totalPosition); 
 
     gl_Position = projection * view * model * totalPosition;
     tex_coords = in_texcoord_0;
