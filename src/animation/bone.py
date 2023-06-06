@@ -63,6 +63,15 @@ class Bone:
                                       scale_k1.timestamp, scale_k2.timestamp)
 
             elif interpolation_method == "hermite":
+                coeff_array = np.array([[2.0, -2.0, 1.0, 1.0],
+                                        [-3.0, 3.0, -2.0, -1.0],
+                                        [0.0, 0.0, 1.0, 0.0],
+                                        [1.0, 0.0, 0.0, 0.0]])
+
+                translation_index = binary_search_keyframe(timestamp, self.translations)
+                rotation_index = binary_search_keyframe(timestamp, self.rotations)
+                scale_index = binary_search_keyframe(timestamp, self.scales)
+
                 translation_p0 = self.translations[translation_index]
                 translation_v0 = np.array([0, 0, 0])
                 translation_p1 = self.translations[translation_index + 1]
