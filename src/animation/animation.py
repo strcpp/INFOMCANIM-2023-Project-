@@ -39,25 +39,24 @@ class Animation:
 
     def get_sorted_dual_quaternion_joints(self):
 
-        sorted_joints = self.get_sorted_joints()
+        joints = self.get_sorted_joints()
+        rs = []
+        ts = []
 
-        rot_quats = []
-        trans_quats = []
+        for _, m in enumerate(joints):
+            _, r, t = Matrix44(m).decompose()
 
-        for joint_mat in sorted_joints:
+            w = -0.5 * ( t[0] * r[1] + t[1] * r[2] + t[2] * r[3])
+            i =  0.5 * ( t[0] * r[0] + t[1] * r[3] - t[2] * r[2])
+            j =  0.5 * (-t[0] * r[3] + t[1] * r[0] + t[2] * r[1])
+            k =  0.5 * ( t[0] * r[2] - t[1] * r[1] + t[2] * r[0])
 
-            mat = np.transpose(joint_mat)
+            t = Quaternion([w, i, j, k])
 
-            r = Quaternion.from_matrix(Matrix44(mat).matrix33)
+            rs.append(r)
+            ts.append(t)
 
-            t = Matrix44(mat).m4
-            t = Quaternion([t[0] * 0.5, t[1] * 0.5, t[2] * 0.5, 0])
-            t = t * r
-
-            rot_quats.append(r)
-            trans_quats.append(t)
-
-        return np.array(rot_quats, dtype="f4"), np.array(trans_quats, dtype="f4")
+        return np.array(rs, dtype="f4"), np.array(ts, dtype="f4")
 
     # just testing to make sure we're loading the animation data correctly
     def assert_channels_not_empty(self, bone: Optional[Bone] = None) -> None:

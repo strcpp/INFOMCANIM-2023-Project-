@@ -28,88 +28,58 @@ uniform mat4 jointsMatrices[MAX_BONES];
 uniform vec4 jointsRotQuats[MAX_BONES];
 uniform vec4 jointsTransQuats[MAX_BONES];
 
-
 void main() {
-    vec4 weightedRotQuats =
-    jointsRotQuats[int(in_jointsIdx.x)] * in_jointsWeight.x +
-    jointsRotQuats[int(in_jointsIdx.y)] * in_jointsWeight.y +
-    jointsRotQuats[int(in_jointsIdx.z)] * in_jointsWeight.z +
-    jointsRotQuats[int(in_jointsIdx.w)] * in_jointsWeight.w;
 
-  vec4 weightedTransQuats =
-    jointsTransQuats[int(in_jointsIdx.x)] * in_jointsWeight.x +
-    jointsTransQuats[int(in_jointsIdx.y)] * in_jointsWeight.y +
-    jointsTransQuats[int(in_jointsIdx.z)] * in_jointsWeight.z +
-    jointsTransQuats[int(in_jointsIdx.w)] * in_jointsWeight.w;
+    int idx0 = in_jointsIdx[0];
+    float w0 = in_jointsWeight[0];
+    vec4 r0 = jointsRotQuats[idx0];
+    vec4 t0 = jointsTransQuats[idx0];
 
-      // Normalize our dual quaternion (necessary for nlerp)
-      float xRot = weightedRotQuats[0];
-      float yRot = weightedRotQuats[1];
-      float zRot = weightedRotQuats[2];
-      float wRot = weightedRotQuats[3];
-      float magnitude = sqrt(xRot * xRot + yRot * yRot + zRot * zRot + wRot * wRot);
-      weightedRotQuats = weightedRotQuats / magnitude;
-      weightedTransQuats = weightedTransQuats / magnitude;
+    vec4 br = r0 * w0;
+    vec4 bt = t0 * w0;
 
-      // Convert out dual quaternion in a 4x4 matrix
-      //  equation: https://www.cs.utah.edu/~ladislav/kavan07skinning/kavan07skinning.pdf
-      float xR = weightedRotQuats[0];
-      float yR = weightedRotQuats[1];
-      float zR = weightedRotQuats[2];
-      float wR = weightedRotQuats[3];
+    for(int i = 1; i < 4; ++i)
+    {
+        int idx = in_jointsIdx[i];
+        float w = in_jointsWeight[i];
 
-      float xT = weightedTransQuats[0];
-      float yT = weightedTransQuats[1];
-      float zT = weightedTransQuats[2];
-      float wT = weightedTransQuats[3];
+        vec4 r = jointsRotQuats[idx];
+        vec4 t = jointsTransQuats[idx];
 
-      float t0 = 2.0 * (-wT * xR + xT * wR - yT * zR + zT * yR);
-      float t1 = 2.0 * (-wT * yR + xT * zR + yT * wR - zT * xR);
-      float t2 = 2.0 * (-wT * zR - xT * yR + yT * xR + zT * wR);
+        if(dot(r, r0) < 0.f)
+        {
+            w *= -1.f;
+        }
 
-      mat4 convertedMatrix = mat4(
-          1.0 - (2.0 * yR * yR) - (2.0 * zR * zR),
-          (2.0 * xR * yR) + (2.0 * wR * zR),
-          (2.0 * xR * zR) - (2.0 * wR * yR),
-          0,
-          (2.0 * xR * yR) - (2.0 * wR * zR),
-          1.0 - (2.0 * xR * xR) - (2.0 * zR * zR),
-          (2.0 * yR * zR) + (2.0 * wR * xR),
-          0,
-          (2.0 * xR * zR) + (2.0 * wR * yR),
-          (2.0 * yR * zR) - (2.0 * wR * xR),
-          1.0 - (2.0 * xR * xR) - (2.0 * yR * yR),
-          0,
-          t0,
-          t1,
-          t2,
-          1
-          );
-
-    /*
-    vec4 tempPosition = vec4(in_position, 1.0);
-
-    for (int i = 0; i < numBoneInfluences; i++) {
-        int boneIdx = in_jointsIdx[i];
-        float weight = in_jointsWeight[i];
-
-        if (boneIdx == -1)
-            continue;
-
-        if (boneIdx >= numBones)
-            break;
-
-        vec4 localPosition = jointsMatrices[boneIdx] * tempPosition;
-        totalPosition += localPosition * weight;
+        br += r * w;
+        bt += t * w;
     }
-    */
 
-    vec4 totalPosition = convertedMatrix * vec4(in_position, 1.0);
+    // Normalize dual quaternion
+    float norm = length(br);
+    br = br / norm;
+    bt = bt / norm;
+
+    // 3D Vector components
+    vec3 v0 = vec3(br[1], br[2], br[3]);
+    vec3 ve = vec3(bt[1], bt[2], bt[3]);
+
+    // Translation
+    vec3 trans = (ve*br[0] - v0*bt[0] + cross(v0, ve)) * 2.0f;
+
+    // Rotation
+    vec3 rot = in_position + cross(v0 * 2.f, cross(v0, in_position) + in_position * br[0]);
+
+    // Result
+    vec3 resultPosition = trans + rot;
+
+    // ----------------
+    vec4 resultPosition4 = vec4(resultPosition, 1.0);
 
     normal = mat3(transpose(inverse(model))) * normalize(in_normal);
-    fragPos = vec3(model * totalPosition);
+    fragPos = vec3(model * resultPosition4);
 
-    gl_Position = projection * view * model * totalPosition;
+    gl_Position = projection * view * model * resultPosition4;
     tex_coords = in_texcoord_0;
 }
 
