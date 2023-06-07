@@ -27,10 +27,13 @@ class Mesh:
         models_path = os.path.join(os.path.dirname(__file__), '../../resources/models')
 
         for root, dirs, files in os.walk(models_path):
+            name = os.path.basename(root)
+            if name == "models":
+                continue
             for filename in files:
                 if os.path.splitext(filename)[1] in ['.gltf', '.glb']:
-                    name = os.path.basename(root)
                     model_file_path = os.path.normpath(os.path.join(root, filename))
+                    print(name, filename)
                     self.data[name] = self.app.loader.from_file(model_file_path)
         end = time.time()
 

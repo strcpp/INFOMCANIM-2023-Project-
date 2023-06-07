@@ -9,25 +9,22 @@ import io
 import animation.animation as a
 from moderngl import VertexArray, Texture, Program
 
-
 # helper class for loading gltf files
 class GLTFLoader(Loader):
 
-    def from_file(self, file_path: str) -> Tuple[List[Tuple[VertexArray, Texture, Program, None]], Animation]:
+    def from_file(self, file_path: str) -> Tuple[List[Tuple[VertexArray, Texture, Program, None]], List[Animation]]:
         gltf = GLTF2().load(file_path)
 
-        animation = None
-        if gltf.animations is not None:
-            # let's just consider the first animation for now (which in our use case is good enough...)
-            # adding multiple animations per file is trivial anyway
-            animation_id = 0
+        animations = []
+        if gltf.animations is not None and len(gltf.animations) > 0 and gltf.skins is not None and len(gltf.skins) > 0:
 
-            if gltf.skins[animation_id] is not None:
-                root_bone, root_transform, bone_dict = get_bones(gltf, gltf.skins[animation_id])
+            for animation_id in list(range(0, len(gltf.animations))):
+                root_bone, root_transform, bone_dict = get_bones(gltf, gltf.skins[0])
                 duration = get_channels(gltf, animation_id, bone_dict)
                 animation = a.Animation(gltf.animations[animation_id].name, duration, root_bone, root_transform)
                 # animation.assert_channels_not_empty()
-
+                animations.append(animation)   
+                
         programs = Shaders.instance()
         prog = programs.get('base')
         commands = []
@@ -114,4 +111,4 @@ class GLTFLoader(Loader):
                 commands.append(
                     (self.app.ctx.vertex_array(prog, vao_content, ibo), texture, prog, transformation_matrix))
 
-        return commands, animation
+        return commands, animations

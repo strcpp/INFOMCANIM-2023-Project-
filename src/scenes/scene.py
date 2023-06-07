@@ -22,6 +22,11 @@ class Scene:
                 return entity.model
         return None
 
+    def set_model(self, model_name: str):
+        self.current_model = model_name
+        self.current_model_entity = self.find(self.current_model)
+        self.current_animation_names = list(map(lambda a: a.name, self.current_model_entity.animations))
+
     @abstractmethod
     def load(self) -> None:
         pass

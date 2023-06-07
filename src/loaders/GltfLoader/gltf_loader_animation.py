@@ -26,7 +26,7 @@ def build_rest_matrix(node):
 
 def get_inv_bind(gltf, skin):
 
-    print(skin.joints)
+    # print(skin.joints)
 
     inverse_bind_matrices_accessor = gltf.accessors[skin.inverseBindMatrices]
     inverse_bind_matrices = get_accessor_data(gltf, inverse_bind_matrices_accessor, 'f4')

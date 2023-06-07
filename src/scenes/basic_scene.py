@@ -43,7 +43,7 @@ class BasicScene(Scene):
         for model in self.models:
             self.add_entity(model, Model(self.app, model))
 
-        self.current_model = 'Vampire'
+        self.set_model('Batman')
 
         self.bones = self.find(self.current_model).get_bones()
 
@@ -53,7 +53,7 @@ class BasicScene(Scene):
             color=Vector3([1.0, 1.0, 1.0], dtype='f4')
         )
 
-        self.skybox = Skybox(self.app, skybox='yokohama', ext='jpg')
+        self.skybox = Skybox(self.app, skybox='clouds', ext='png')
 
         self.timestamp = 0
 
@@ -61,8 +61,7 @@ class BasicScene(Scene):
         self.entities.clear()
 
     def update(self, dt: float) -> None:
-        model = self.find(self.current_model)
-        animation_length = model.animation_length
+        animation_length = self.current_model_entity.animation_length
 
         if self.animation_speed > 0:  # Forward animation
             self.timestamp += dt * self.animation_speed
@@ -78,8 +77,8 @@ class BasicScene(Scene):
             if self.timestamp < 0:
                 self.timestamp = animation_length
 
-        model.set_pose(self.timestamp, self.interpolation_method)
-        bone_lines = get_bone_connections(model.get_bones())
+        self.current_model_entity.set_pose(self.timestamp, self.interpolation_method)
+        bone_lines = get_bone_connections(self.current_model_entity.get_bones())
         self.lines.update(bone_lines)
 
     def render_ui(self) -> None:
@@ -102,14 +101,20 @@ class BasicScene(Scene):
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
         _, self.show_model = imgui.checkbox("Model", self.show_model)
 
+        # Reset the timestamp when switching models or animations
         imgui.text("Select a model")
-
         _, selected_model = imgui.combo('##model_combo', self.models.index(self.current_model), self.models)
-
         if selected_model != -1:
             selected_model_name = self.models[selected_model]
             if selected_model_name != self.current_model:
-                self.current_model = selected_model_name
+                self.timestamp = 0
+                self.set_model(selected_model_name)
+
+        imgui.text("Select an animation")
+        _, selected_animation = imgui.combo("##animation_combo", self.current_model_entity.current_animation_id, self.current_animation_names)
+        if selected_animation != -1 and selected_animation != self.current_model_entity.current_animation_id:
+            self.timestamp = 0
+            self.current_model_entity.set_animation_id(selected_animation)
 
         min_speed = 0.0  # Set the minimum speed value to 0/ Animation stopped
         max_speed = 10.0  # Adjust if we want
@@ -126,7 +131,7 @@ class BasicScene(Scene):
         imgui.pop_style_color()
 
         # Add a slider for animation length
-        animation_length = self.find(self.current_model).animation_length
+        animation_length = self.current_model_entity.animation_length
         length_color = np.interp(self.timestamp, [0, animation_length], [0, 1])
         red_2 = length_color
         green_2 = 0.0
