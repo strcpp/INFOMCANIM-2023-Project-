@@ -6,3 +6,4 @@ imgui
 pyrr
 numba
 imageio
+dual_quaternions
