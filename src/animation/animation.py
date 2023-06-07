@@ -3,6 +3,9 @@ from animation.bone import Bone
 from typing import Optional
 import numpy as np
 
+# test
+from dual_quaternions import DualQuaternion
+
 
 class Animation:
     def __init__(self, name: str, duration: float, root_bone: Bone, root_transform: Matrix44) -> None:
@@ -46,15 +49,10 @@ class Animation:
         for _, m in enumerate(joints):
             _, r, t = Matrix44(m).decompose()
 
-            w = -0.5 * ( t[0] * r[1] + t[1] * r[2] + t[2] * r[3])
-            i =  0.5 * ( t[0] * r[0] + t[1] * r[3] - t[2] * r[2])
-            j =  0.5 * (-t[0] * r[3] + t[1] * r[0] + t[2] * r[1])
-            k =  0.5 * ( t[0] * r[2] - t[1] * r[1] + t[2] * r[0])
+            dq = DualQuaternion.from_quat_pose_array(np.array([r[3], r[0], r[1], r[2], t[0], t[1], t[2]]))
 
-            t = Quaternion([w, i, j, k])
-
-            rs.append(r)
-            ts.append(t)
+            rs.append(dq.q_r.q)
+            ts.append(dq.q_d.q)
 
         return np.array(rs, dtype="f4"), np.array(ts, dtype="f4")
 
