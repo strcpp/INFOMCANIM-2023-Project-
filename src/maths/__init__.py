@@ -198,54 +198,30 @@ def hermite_scale(s0: np.ndarray, s1: np.ndarray, v0: np.ndarray, v1: np.ndarray
 
 
 @njit(cache=True)
-def calculate_translation_tangents(p0: np.ndarray, p1: np.ndarray,
-                                   p2: np.ndarray, p3: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    translation_v1 = ((p1 - p0) + (p2 - p1)) / 2
-    translation_v2 = ((p2 - p1) + (p3 - p2)) / 2
-
-    return translation_v1, translation_v2
-
-
-@njit(cache=True)
-def calculate_rotation_tangents(r0: np.ndarray, r1: np.ndarray,
-                                r2: np.ndarray, r3: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    r1_sub_r0 = quat_to_scaled_angle_axis(quat_abs(quat_mult(r1, quat_inv(r0))))
-    r2_sub_r1 = quat_to_scaled_angle_axis(quat_abs(quat_mult(r2, quat_inv(r1))))
-    r3_sub_r2 = quat_to_scaled_angle_axis(quat_abs(quat_mult(r3, quat_inv(r2))))
-
-    rotation_v1 = (r1_sub_r0 + r2_sub_r1) / 2
-    rotation_v2 = (r2_sub_r1 + r3_sub_r2) / 2
-
-    return rotation_v1, rotation_v2
-
-
-@njit(cache=True)
-def calculate_scale_tangents(s0: np.ndarray, s1: np.ndarray,
-                             s2: np.ndarray, s3: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    s1_sub_s0 = np.log(s1 / s0)
-    s2_sub_s1 = np.log(s2 / s1)
-    s3_sub_s2 = np.log(s3 / s2)
-
-    scale_v1 = (s1_sub_s0 + s2_sub_s1) / 2
-    scale_v2 = (s2_sub_s1 + s3_sub_s2) / 2
-
-    return scale_v1, scale_v2
-
-
-@njit(cache=True)
 def calculate_translation_tangent(p0: np.ndarray, p1: np.ndarray,
                                   t0: float, t1: float) -> Tuple[np.ndarray, np.ndarray]:
-    return (p1 - p0) / (t1 - t0)
+    if t1 - t0 <= 1:
+        return p1 - p0
+    else:
+        return (p1 - p0) / (t1 - t0)
 
 
 @njit(cache=True)
 def calculate_rotation_tangent(r0: np.ndarray, r1: np.ndarray, t0: float, t1: float) -> Tuple[np.ndarray, np.ndarray]:
     r1_sub_r0 = quat_to_scaled_angle_axis(quat_abs(quat_mult(r1, quat_inv(r0))))
-    return r1_sub_r0 / (t1 - t0)
+
+    if t1 - t0 <= 1:
+        return r1_sub_r0
+    else:
+        return r1_sub_r0 / (t1 - t0)
 
 
 @njit(cache=True)
 def calculate_scale_tangent(s0: np.ndarray, s1: np.ndarray,
                             t0: np.ndarray, t1: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     s1_sub_s0 = np.log(s1 / s0)
-    return s1_sub_s0 / (t1 - t0)
+
+    if t1 - t0 <= 1:
+        return s1_sub_s0
+    else:
+        return s1_sub_s0 / (t1 - t0)

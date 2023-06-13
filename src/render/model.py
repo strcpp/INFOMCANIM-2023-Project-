@@ -19,8 +19,8 @@ class Model:
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
-    def set_pose(self, timestamp: float, interpolation_method: str) -> None:
-        self.animation.set_pose(timestamp, interpolation_method)
+    def set_pose(self, timestamp: float, interpolation_method: str, n_keyframes: int) -> None:
+        self.animation.set_pose(timestamp, interpolation_method, n_keyframes)
 
     def get_animation_length(self) -> float:
         # Retrieve the animation duration from the loaded animation data
@@ -34,6 +34,12 @@ class Model:
             return self.animation.root_bone
         else:
             return None
+
+    def get_number_of_keyframes(self) -> int:
+        if self.animation:
+            return self.animation.root_bone.get_number_of_keyframes()
+        else:
+            return 0
 
     def get_model_matrix(self, transformation_matrix: Optional[Matrix44]) -> np.ndarray:
         trans = Matrix44.from_translation(self.translation)
