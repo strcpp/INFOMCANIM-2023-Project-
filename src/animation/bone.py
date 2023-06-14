@@ -76,59 +76,62 @@ class Bone:
             elif interpolation_method == "hermite":
                 index = binary_search_keyframe(timestamp, self.translations)
                 indices = np.linspace(0, len(self.translations) - 1, n_keyframes, dtype=int)
-                left_index = np.searchsorted(indices, index, side='right') - 1
-                left_index_2 = left_index - 1
-                if left_index_2 < 0:
-                    left_index_2 = 0
-                right_index = left_index + 1
-                right_index_2 = right_index + 1
-                if right_index_2 > n_keyframes - 1:
-                    right_index_2 = n_keyframes - 1
+                i1 = np.searchsorted(indices, index, side='right') - 1
+                i0 = i1 - 1
+                if i0 < 0:
+                    i0 = 0
+                i2 = i1 + 1
+                i3 = i2 + 1
+                if i3 > n_keyframes - 1:
+                    i3 = n_keyframes - 1
 
-                timestamp__1 = self.translations[indices[left_index_2]].timestamp
-                timestamp_0 = self.translations[indices[left_index]].timestamp
-                timestamp_1 = self.translations[indices[right_index]].timestamp
-                timestamp_2 = self.translations[indices[right_index_2]].timestamp
+                timestamp_0 = self.translations[indices[i0]].timestamp
+                timestamp_1 = self.translations[indices[i1]].timestamp
+                timestamp_2 = self.translations[indices[i2]].timestamp
+                timestamp_3 = self.translations[indices[i3]].timestamp
 
-                timestamp_norm = (timestamp - timestamp_0) / (timestamp_1 - timestamp_0)
+                timestamp_norm = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
 
-                translation_k_1 = self.translations[indices[left_index_2]].value
-                translation_k0 = self.translations[indices[left_index]].value
-                translation_k1 = self.translations[indices[right_index]].value
-                translation_k2 = self.translations[indices[right_index_2]].value
+                translation_k0 = self.translations[indices[i0]].value
+                translation_k1 = self.translations[indices[i1]].value
+                translation_k2 = self.translations[indices[i2]].value
+                translation_k3 = self.translations[indices[i3]].value
 
-                rotation_k_1 = self.rotations[indices[left_index_2]].value
-                rotation_k0 = self.rotations[indices[left_index]].value
-                rotation_k1 = self.rotations[indices[right_index]].value
-                rotation_k2 = self.rotations[indices[right_index_2]].value
+                rotation_k0 = self.rotations[indices[i0]].value
+                rotation_k1 = self.rotations[indices[i1]].value
+                rotation_k2 = self.rotations[indices[i2]].value
+                rotation_k3 = self.rotations[indices[i3]].value
 
-                scale_k_1 = self.scales[indices[left_index_2]].value
-                scale_k0 = self.scales[indices[left_index]].value
-                scale_k1 = self.scales[indices[right_index]].value
-                scale_k2 = self.scales[indices[right_index_2]].value
+                scale_k0 = self.scales[indices[i0]].value
+                scale_k1 = self.scales[indices[i1]].value
+                scale_k2 = self.scales[indices[i2]].value
+                scale_k3 = self.scales[indices[i3]].value
 
-                translation_tangent_v0 = -calculate_translation_tangent(translation_k_1, translation_k1,
-                                                                        timestamp__1, timestamp_1)
-                translation_tangent_v1 = calculate_translation_tangent(translation_k0, translation_k2,
-                                                                       timestamp_0, timestamp_2)
+                translation_tangent_v0 = calculate_translation_tangent(translation_k0, translation_k2,
+                                                                        timestamp_2, timestamp_0)
+                translation_tangent_v1 = calculate_translation_tangent(translation_k1, translation_k3,
+                                                                       timestamp_3, timestamp_1)
 
 
-                inter_translation = hermite_translation(translation_k0, translation_k1,
-                                                        translation_tangent_v1, translation_tangent_v0, timestamp_norm)
+                inter_translation = hermite_translation(translation_k1, translation_k2,
+                                                        translation_tangent_v0, translation_tangent_v1, timestamp_norm)
 
-                rotation_tangent_v0 = -calculate_rotation_tangent(rotation_k_1, rotation_k1,
-                                                                  timestamp__1, timestamp_1)
+                rotation_tangent_v0 = calculate_rotation_tangent(rotation_k0, rotation_k2,
+                                                                  timestamp_2, timestamp_0)
 
-                rotation_tangent_v1 = calculate_rotation_tangent(rotation_k0, rotation_k2,
-                                                                 timestamp_0, timestamp_2)
+                rotation_tangent_v1 = calculate_rotation_tangent(rotation_k1, rotation_k3,
+                                                                 timestamp_3, timestamp_1)
 
-                inter_rotation = hermite_rotation(rotation_k0, rotation_k1,
-                                                  rotation_tangent_v1, rotation_tangent_v0, timestamp_norm)
+                # rotation_tangent = calculate_rotation_tangent(rotation_k2, rotation_k1, timestamp_2, timestamp_1)
 
-                scale_tangent_v0 = -calculate_scale_tangent(scale_k_1, scale_k1, timestamp__1, timestamp_1)
-                scale_tangent_v1 = calculate_scale_tangent(scale_k0, scale_k2, timestamp_0, timestamp_2)
+                inter_rotation = hermite_rotation(rotation_k1, rotation_k2,
+                                                  rotation_tangent_v0, rotation_tangent_v1, timestamp_norm)
 
-                inter_scale = hermite_scale(scale_k0, scale_k1, scale_tangent_v1, scale_tangent_v0, timestamp_norm)
+                scale_tangent_v0 = calculate_scale_tangent(scale_k0, scale_k2, timestamp_2, timestamp_0)
+                scale_tangent_v1 = calculate_scale_tangent(scale_k1, scale_k3, timestamp_3, timestamp_1)
+                # scale_tangent = calculate_scale_tangent(scale_k2, scale_k1, timestamp_2, timestamp_1)
+
+                inter_scale = hermite_scale(scale_k1, scale_k2, scale_tangent_v0, scale_tangent_v1, timestamp_norm)
 
             else:
                 raise ValueError("Invalid interpolation method: {}".format(interpolation_method))
