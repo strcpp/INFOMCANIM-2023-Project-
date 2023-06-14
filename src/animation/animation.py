@@ -28,17 +28,18 @@ class Animation:
         while len(nodes) > 0:
             current_node, parent_transform = nodes.pop()
             if current_node.index > -1:
-                joint_matrix = np.transpose(current_node.inverse_bind_matrix)
-                joint_matrix = current_node.local_transform @ joint_matrix
-                joint_matrix = np.transpose(joint_matrix)
+                #joint_matrix = np.transpose(current_node.inverse_bind_matrix)
 
-                pair = (current_node.index, joint_matrix)
+                dq = current_node.dq * current_node.dq_bind.quaternion_conjugate()
+
+                pair = (current_node.index, dq)
                 joints.append(pair)
 
             nodes += list(zip(current_node.children, [current_node.local_transform for _ in current_node.children]))
 
         joints = list(map(lambda x: x[1], sorted(joints, key=lambda x: x[0])))
-        return np.array(joints, dtype='f4')
+        #return np.array(joints, dtype='f4')
+        return joints
 
     def get_sorted_dual_quaternion_joints(self):
 
@@ -46,10 +47,10 @@ class Animation:
         rs = []
         ts = []
 
-        for _, m in enumerate(joints):
-            _, r, t = Matrix44(m).decompose()
+        for _, dq in enumerate(joints):
+            #_, r, t = Matrix44(m).decompose()
 
-            dq = DualQuaternion.from_quat_pose_array(np.array([r[3], r[0], r[1], r[2], t[0], t[1], t[2]]))
+            #dq = DualQuaternion.from_quat_pose_array(np.array([r[3], r[0], r[1], r[2], t[0], t[1], t[2]]))
 
             rs.append(dq.q_r.q)
             ts.append(dq.q_d.q)

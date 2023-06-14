@@ -4,6 +4,10 @@ from typing import List, Optional
 from animation.keyframe import Keyframe
 from maths import *
 
+from pyrr import Quaternion
+from dual_quaternions import DualQuaternion
+from pyquaternion import Quaternion as Q
+
 # preallocate matrices
 translation = np.identity(4)
 rotation = np.identity(4)
@@ -30,6 +34,8 @@ class Bone:
                  children: List['Bone'] = None, local_transform: Optional[Matrix44] = None,
                  rotations: Optional[Keyframe] = None, translations: Optional[Keyframe] = None,
                  scales: Optional[Keyframe] = None, index: Optional[int] = -1) -> None:
+        self.dq_bind = DualQuaternion.identity()
+        self.dq = DualQuaternion.identity()
         self.name = name
         self.local_transform = local_transform if local_transform is not None else rest_transform
         self.rest_transform = rest_transform
@@ -40,7 +46,19 @@ class Bone:
         self.scales = scales
         self.index = index
 
-    def set_pose(self, timestamp: float, interpolation_method: str, parent_world_transform: Matrix44 = Matrix44(np.identity(4, dtype=np.float32))) -> None:
+        if inverse_bind_matrix is None:
+            inverse_bind_matrix = Matrix44.identity()
+
+        bind_mat = np.linalg.inv(np.transpose(inverse_bind_matrix))
+
+        _, r, t = Matrix44(bind_mat).decompose()
+        dq = DualQuaternion.from_quat_pose_array(np.array([r[3], r[0], r[1], r[2], t[0], t[1], t[2]]))
+
+        self.bind_quat = dq
+
+
+
+    def set_pose(self, timestamp: float, interpolation_method: str, parent_world_transform: Matrix44 = Matrix44(np.identity(4, dtype=np.float32)) , parent_dq: DualQuaternion = DualQuaternion(Q(0.7071067094802856, 0.7071068286895752,0,0), Q(0,0,0,0)), parent_bind: DualQuaternion = DualQuaternion.identity()) -> None:
         if self.rotations is not None and self.translations is not None and self.scales is not None:
             translation_index = binary_search_keyframe(timestamp, self.translations)
             rotation_index = binary_search_keyframe(timestamp, self.rotations)
@@ -56,6 +74,13 @@ class Bone:
                 rotation_k2 = self.rotations[rotation_index + 1]
                 inter_rotation = slerp(rotation_k1.value, rotation_k2.value, timestamp,
                                         rotation_k1.timestamp, rotation_k2.timestamp)
+
+                r = inter_rotation
+                t = inter_translation
+
+                self.dq = parent_dq * DualQuaternion.from_quat_pose_array(np.array([r[3], r[0], r[1], r[2], t[0], t[1], t[2]]))
+                self.dq_bind = self.bind_quat *  parent_bind
+
 
                 scale_k1 = self.scales[scale_index]
                 scale_k2 = self.scales[scale_index + 1]
@@ -96,7 +121,7 @@ class Bone:
             self.local_transform = parent_world_transform @ self.local_transform
 
             for child in self.children:
-                child.set_pose(timestamp, interpolation_method, self.local_transform)
+                child.set_pose(timestamp, interpolation_method, self.local_transform, self.dq, self.dq_bind)
 
     # gets the bind-pose (usually T-pose) world-space matrix.
     def get_global_bind_matrix(self) -> np.ndarray:

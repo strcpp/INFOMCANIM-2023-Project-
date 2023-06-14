@@ -72,6 +72,7 @@ void main() {
 
     // Result
     vec3 resultPosition = trans + rot;
+    resultPosition *= 0.009999999776482582;
 
     // ----------------
     vec4 resultPosition4 = vec4(resultPosition, 1.0);
