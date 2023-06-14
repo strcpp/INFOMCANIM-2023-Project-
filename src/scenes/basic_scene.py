@@ -38,7 +38,7 @@ class BasicScene(Scene):
     interpolation_method = "linear"
 
     def load(self) -> None:
-        self.models = ['Vampire', 'Lady', 'Batman', 'Joker']
+        self.models = ['Vampire', 'Lady', 'Batman', 'Joker', 'Cylinder']
 
         for model in self.models:
             self.add_entity(model, Model(self.app, model))
