@@ -114,7 +114,7 @@ class BasicScene(Scene):
         _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
         _, self.show_model = imgui.checkbox("Model", self.show_model)
 
-        imgui.text("Select a model")
+        imgui.text("Select a Model")
 
         _, selected_model = imgui.combo('##model_combo', self.models.index(self.current_model), self.models)
 
@@ -136,7 +136,7 @@ class BasicScene(Scene):
         slider_color = (red, green, blue, 1.0)  # Ranging from yellow to bright red
 
         imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, *slider_color)
-        _, self.animation_speed = imgui.slider_float("Animation speed", self.animation_speed, min_speed, max_speed)
+        _, self.animation_speed = imgui.slider_float("Animation Speed", self.animation_speed, min_speed, max_speed)
         imgui.pop_style_color()
 
         # Add a slider for animation length
@@ -228,8 +228,7 @@ class BasicScene(Scene):
 
         imgui.pop_style_color()
 
-        imgui.same_line()
-        _, self.n_keyframes = imgui.slider_int("Keyframes", self.n_keyframes, 2, self.max_keyframes)
+        _, self.n_keyframes = imgui.slider_int("Keyframes to Use", self.n_keyframes, 2, self.max_keyframes)
 
         imgui.end()
         imgui.render()
