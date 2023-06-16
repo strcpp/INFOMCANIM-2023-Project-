@@ -29,9 +29,8 @@ class Model:
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
-
-    def set_pose(self, timestamp: float, interpolation_method: str) -> None:
-        self.current_animation.set_pose(timestamp, interpolation_method)
+    def set_pose(self, timestamp: float, interpolation_method: str, n_keyframes: int) -> None:
+        self.current_animation.set_pose(timestamp, interpolation_method, n_keyframes)
 
     def set_animation_id(self, animation_id: int):
         if animation_id >= len(self.animations):
@@ -53,7 +52,13 @@ class Model:
             return self.current_animation.root_bone
         else:
             return None
-    
+
+    def get_number_of_keyframes(self) -> int:
+        if self.current_animation:
+            return self.current_animation.root_bone.get_number_of_keyframes()
+        else:
+            return 0
+
     def get_model_matrix(self, transformation_matrix: Optional[Matrix44]) -> np.ndarray:
         trans = Matrix44.from_translation(self.translation)
         rot = Matrix44.from_quaternion(Quaternion(self.rotation))
@@ -64,7 +69,6 @@ class Model:
             model = model * transformation_matrix
 
         return np.array(model, dtype='f4')
-
 
     def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44, light: Light) -> None:
         for i, command in enumerate(self.commands):

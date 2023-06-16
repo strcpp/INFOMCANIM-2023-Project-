@@ -11,9 +11,9 @@ class Animation:
         self.root_bone = root_bone
         self.root_transform = root_transform
 
-    def set_pose(self, timestamp: float, interpolation_method: str) -> None:
+    def set_pose(self, timestamp: float, interpolation_method: str, n_keyframes: int) -> None:
         t = timestamp % self.duration
-        self.root_bone.set_pose(t, interpolation_method, self.root_transform)
+        self.root_bone.set_pose(t, interpolation_method, n_keyframes, self.root_transform)
 
     def get_sorted_joints(self):
         nodes = [(self.root_bone, self.root_transform)]

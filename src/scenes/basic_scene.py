@@ -36,6 +36,15 @@ class BasicScene(Scene):
     default_speed = False
     previous_animation_speed = animation_speed
     interpolation_method = "linear"
+    n_keyframes = 2
+    max_keyframes = 2
+    models = []
+    current_model = ""
+    bones = None
+    lines = None
+    light = None
+    skybox = None
+    timestamp = 0
 
     def load(self) -> None:
         self.models = ['Vampire', 'Lady', 'Batman', 'Joker']
@@ -57,6 +66,9 @@ class BasicScene(Scene):
 
         self.timestamp = 0
 
+        self.n_keyframes = self.find(self.current_model).get_number_of_keyframes()
+        self.max_keyframes = self.n_keyframes
+
     def unload(self) -> None:
         self.entities.clear()
 
@@ -77,7 +89,7 @@ class BasicScene(Scene):
             if self.timestamp < 0:
                 self.timestamp = animation_length
 
-        self.current_model_entity.set_pose(self.timestamp, self.interpolation_method)
+        self.current_model_entity.set_pose(self.timestamp, self.interpolation_method, self.n_keyframes)
         bone_lines = get_bone_connections(self.current_model_entity.get_bones())
         self.lines.update(bone_lines)
 
@@ -218,6 +230,8 @@ class BasicScene(Scene):
             self.interpolation_method = "hermite"
 
         imgui.pop_style_color()
+
+        _, self.n_keyframes = imgui.slider_int("Keyframes to Use", self.n_keyframes, 2, self.max_keyframes)
 
         imgui.end()
         imgui.render()
