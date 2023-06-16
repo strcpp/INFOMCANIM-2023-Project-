@@ -9,8 +9,6 @@ from animation.bone import Bone
 import numpy as np
 from typing import List, Optional, Tuple
 
-
-
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
     bone_connections = []
 
@@ -47,7 +45,7 @@ class BasicScene(Scene):
     timestamp = 0
 
     def load(self) -> None:
-        self.models = ['Vampire', 'Lady', 'Batman', 'Joker']
+        self.models = ['Batman', 'Joker']
 
         for model in self.models:
             self.add_entity(model, Model(self.app, model))
