@@ -24,7 +24,6 @@ def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None)
 
     return bone_connections
 
-
 class BasicScene(Scene):
     show_model_selection = False
     show_skeleton = True
@@ -95,7 +94,7 @@ class BasicScene(Scene):
         imgui.new_frame()
 
         # Change the style of the entire ImGui interface
-        imgui.style_colors_classic() 
+        imgui.style_colors_classic()
 
         # Add an ImGui window
         imgui.begin("Settings")
@@ -115,13 +114,12 @@ class BasicScene(Scene):
 
         # Add a collapsible header for Line Settings
         if imgui.tree_node("Skeleton Settings"):
-
             # Add a slider for line thickness
             thickness_min = 1
             thickness_max = 15
             _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, thickness_max)
             self.thickness_value = self.lines.lineWidth
-        
+
             _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
             _, self.show_model = imgui.checkbox("Model", self.show_model)
             imgui.tree_pop()
@@ -163,10 +161,10 @@ class BasicScene(Scene):
 
             if self.animation_speed != 0:
                 button_label = "Stop"
-                button_color = (0.694, 0.282, 0.282, 1.0) # Red color for Stop button
+                button_color = (0.694, 0.282, 0.282, 1.0)  # Red color for Stop button
             else:
                 button_label = "Play"
-                button_color = (0.282, 0.361, 0.306, 1.0) # Green color for Play button
+                button_color = (0.282, 0.361, 0.306, 1.0)  # Green color for Play button
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *button_color)
             if imgui.button(button_label):
@@ -176,6 +174,54 @@ class BasicScene(Scene):
                     self.animation_speed = 0.0
             imgui.pop_style_color()
             imgui.tree_pop()
+
+            forward_button_color = button_color
+            if self.animation_speed == 1:
+                forward_button_color = button_color
+
+            imgui.push_style_color(imgui.COLOR_BUTTON, *forward_button_color)
+            if imgui.button("Forward"):
+                if self.animation_speed != 1:
+                    self.animation_speed = 1
+                else:
+                    self.animation_speed = self.previous_animation_speed
+
+            imgui.same_line()
+            imgui.pop_style_color()
+
+            backward_button_color = button_color
+            if self.animation_speed == -1:
+                backward_button_color = button_color
+
+            imgui.push_style_color(imgui.COLOR_BUTTON, *backward_button_color)
+            if imgui.button("Backward"):
+                if self.animation_speed != -1:
+                    self.animation_speed = -1
+                else:
+                    self.animation_speed = self.previous_animation_speed
+
+            imgui.pop_style_color()
+
+            linear_button_color = button_color
+            if self.interpolation_method == "linear":
+                linear_button_color = button_color
+
+            imgui.push_style_color(imgui.COLOR_BUTTON, *linear_button_color)
+            if imgui.button("Linear"):
+                self.interpolation_method = "linear"
+
+            imgui.pop_style_color()
+            imgui.same_line()
+
+            hermite_button_color = button_color
+            if self.interpolation_method == "hermite":
+                hermite_button_color = button_color
+
+            imgui.push_style_color(imgui.COLOR_BUTTON, *hermite_button_color)
+            if imgui.button("Hermite"):
+                self.interpolation_method = "hermite"
+
+            imgui.pop_style_color()
 
         imgui.end()
         imgui.render()
