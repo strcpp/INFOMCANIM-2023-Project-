@@ -2,7 +2,7 @@ import imageio as io
 import os
 from render.shaders import Shaders
 import numpy as np
-from pyrr import Matrix44
+from pyrr import Matrix44, Matrix33
 
 class Skybox:
     def __init__(self, app, skybox: str, ext: str = 'png'):
@@ -30,6 +30,24 @@ class Skybox:
 
         self.vao = self.app.ctx.simple_vertex_array(self.skybox_prog, self.vbo, 'position')
 
-    def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44):
-        self.skybox_prog['m_invProjView'].write(np.linalg.inv(proj_matrix * view_matrix))
+    def draw(self, proj_matrix: np.ndarray, view_matrix: np.ndarray):
+        view = Matrix44.from_matrix33(Matrix33.from_matrix44(view_matrix))
+        view.r4[2] = -4.5
+        view.r4[0] = -1.7524061e-16
+        print(proj_matrix * view_matrix)
+        print(proj_matrix * view)
+        invpm = np.linalg.inv(proj_matrix * view_matrix)
+        invpm2 = np.linalg.inv(proj_matrix * view)
+        invpm2[1][3] = -5.7133058e-09
+        print(invpm)
+        print(invpm2)
+        # print(self.app.camera.yaw)
+        # print(view_matrix)
+        # print(view)
+        # print(proj_matrix)
+        # print(proj_matrix * view)
+        # print(proj_matrix * view_matrix)
+        # print(proj_matrix @ view_matrix)
+        print("\n")
+        self.skybox_prog['m_invProjView'].write(invpm)
         self.vao.render()
