@@ -7,9 +7,8 @@ from light import Light
 import imgui
 from animation.bone import Bone
 import numpy as np
-
 from typing import List, Optional, Tuple
-import dearpygui.dearpygui as dpg
+
 
 
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
