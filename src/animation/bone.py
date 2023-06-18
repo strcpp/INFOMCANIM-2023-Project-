@@ -3,6 +3,7 @@ import numpy as np
 from typing import List, Optional
 from animation.keyframe import Keyframe
 from maths import *
+from numba import njit
 
 # preallocate matrices
 translation = np.identity(4)
@@ -10,22 +11,23 @@ rotation = np.identity(4)
 scale = np.identity(4)
 
 
-def binary_search_keyframe(timestamp: float, channel: List[Keyframe]) -> int:
+@njit(cache=True)
+def binary_search_keyframe(timestamp: float, timestamps: np.ndarray) -> int:
     """
-    Finds the closest smallest Keyframe of a given timestamp
-    :param timestamp: Current timestamp
-    :param channel: Input channel (translations, rotations or scales)
-    :return: Index of the closest smallest Keyframe of a given timestamp
+    Finds the closest smallest Keyframe of a given timestamp.
+    :param timestamp: Current timestamp.
+    :param timestamps: List of timestamps for all Keyframes.
+    :return: Index of the closest smallest Keyframe of a given timestamp.
     """
     # Find keyframes for given timestamp
     low = 0
-    high = len(channel)
+    high = len(timestamps)
 
     while low <= high:
         mid = (high + low) // 2
-        if timestamp > channel[mid].timestamp:
+        if timestamp > timestamps[mid]:
             low = mid + 1
-        elif timestamp < channel[mid].timestamp:
+        elif timestamp < timestamps[mid]:
             high = mid - 1
 
     return high
@@ -33,7 +35,7 @@ def binary_search_keyframe(timestamp: float, channel: List[Keyframe]) -> int:
 
 class Bone:
     """
-    Implements each Bone of the model
+    Implements each bone of the model.
     """
     timestamp_norm = 0
     index = 0
@@ -54,16 +56,16 @@ class Bone:
                  rotations: Optional[Keyframe] = None, translations: Optional[Keyframe] = None,
                  scales: Optional[Keyframe] = None, index: Optional[int] = -1) -> None:
         """
-        Constructor
-        :param name: Name of the bone
-        :param inverse_bind_matrix: Inverse bind matrix of the bone
-        :param rest_transform: Rest transform of the bone
-        :param children: Children bones of the bone
-        :param local_transform: Local transform of the bone
-        :param rotations: Rotation quaternions of the bone for each Keyframe
-        :param translations: Translation vectors of the bone for each Keyframe
-        :param scales: Scale vectors of the bone for each Keyframe
-        :param index: Index of the bone in the list of joints
+        Constructor.
+        :param name: Name of the bone.
+        :param inverse_bind_matrix: Inverse bind matrix of the bone.
+        :param rest_transform: Rest transform of the bone.
+        :param children: Children bones of the bone.
+        :param local_transform: Local transform of the bone.
+        :param rotations: Rotation quaternions of the bone for each Keyframe.
+        :param translations: Translation vectors of the bone for each Keyframe.
+        :param scales: Scale vectors of the bone for each Keyframe.
+        :param index: Index of the bone in the list of joints.
         """
         self.name = name
         self.local_transform = local_transform if local_transform is not None else rest_transform
@@ -88,7 +90,8 @@ class Bone:
         """
         if self.scales is not None and self.rotations is not None and self.translations is not None:
             if is_parent:
-                Bone.index = binary_search_keyframe(timestamp, self.translations)
+                Bone.index = binary_search_keyframe(timestamp,
+                                                    np.array([keyframe.timestamp for keyframe in self.translations]))
                 Bone.indices = np.linspace(0, len(self.translations) - 1, n_keyframes, dtype=int)
 
                 if interpolation_method == "linear":
@@ -180,16 +183,17 @@ class Bone:
             for child in self.children:
                 child.set_pose(timestamp, interpolation_method, n_keyframes, self.local_transform, False)
 
+    @njit(cache=True)
     def get_global_bind_matrix(self) -> np.ndarray:
         """
         Gets the bind-pose (usually T-pose) world-space matrix.
-        :return: bind-pose world-space matrix
+        :return: bind-pose world-space matrix.
         """
         return np.linalg.inv(self.inverse_bind_matrix)
 
     def get_number_of_keyframes(self) -> int:
         """
-        Gets the number of keyframes for the current animation
-        :return: Number of keyframes for the current animation
+        Gets the number of keyframes for the current animation.
+        :return: Number of keyframes for the current animation.
         """
         return len(self.translations)

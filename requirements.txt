@@ -6,3 +6,4 @@ imgui
 pyrr
 numba
 imageio
+tqdm
