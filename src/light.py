@@ -2,7 +2,15 @@ from pyrr import Vector3
 
 
 class Light:
+    """
+    Implements lighting
+    """
     def __init__(self, position: Vector3, color: Vector3) -> None:
+        """
+        Constructor
+        :param position: Light position
+        :param color: Light color
+        """
         self.position = position
         self.color = color
         # just some random values for lights

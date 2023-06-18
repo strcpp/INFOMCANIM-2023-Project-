@@ -1,6 +1,6 @@
 from animation.bone import Bone
 from animation.keyframe import Keyframe
-from pyrr import quaternion as q, Quaternion, Vector3, Matrix44
+from pyrr import Matrix44
 import numpy as np
 from pygltflib import *
 from loaders.GltfLoader.gltf_loader_helpers import *
@@ -39,12 +39,6 @@ def find_root_node(gltf, skin):
     def traverse_node_hierarchy(node_id, skin_joints, parent_transform=None):
         node = gltf.nodes[node_id]
         local_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
-
-        # Multiply by the parent's transform if it exists
-        # if parent_transform is not None:
-        #     local_transform = parent_transform * node_transform
-        # else:
-        #     local_transform = node_transform
 
         if node_id in skin_joints:
             return node_id, parent_transform
@@ -90,8 +84,6 @@ def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]
                     children=children_bones, index=bone_index)
         bone_dict[node.name] = bone
         return bone
-
-    #print(skin.joints, len(skin.joints))
 
     root_node, root_transform = find_root_node(gltf, skin)
     inv_binds = get_inv_bind(gltf, skin)

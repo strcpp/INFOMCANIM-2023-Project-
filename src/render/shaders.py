@@ -1,11 +1,10 @@
 from moderngl import Program
 
-"""
-This class loads/stores all shaders to be used by the program
-"""
-
 
 class Shaders:
+    """
+   Loads/stores all shaders to be used by the program
+    """
     _instance = None
 
     @classmethod
@@ -15,6 +14,10 @@ class Shaders:
         return cls._instance
 
     def __init__(self, app) -> None:
+        """
+        Constructor
+        :param app: Main app
+        """
         if Shaders._instance is not None:
             raise RuntimeError("Shaders is a singleton and should not be instantiated more than once")
         self.shaders = {}
@@ -24,7 +27,16 @@ class Shaders:
         self.shaders['skybox'] = self.app.load_program("shaders/skybox.glsl")
 
     def get(self, name: str) -> Program:
+        """
+        Returns the shader.
+        :param name: Shader name.
+        :return: Current shader.
+        """
         return self.shaders[name]
 
     def destroy(self) -> None:
+        """
+        Destroys the shader
+        :return:
+        """
         [shader.release() for shader in self.shaders.values()]

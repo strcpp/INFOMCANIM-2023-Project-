@@ -1,6 +1,7 @@
-from numba import njit
-import numpy as np
 import math
+
+import numpy as np
+from numba import njit
 from typing import Tuple
 
 eps = 1e-8

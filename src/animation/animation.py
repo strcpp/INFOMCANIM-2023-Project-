@@ -13,7 +13,7 @@ class Animation:
 
     def set_pose(self, timestamp: float, interpolation_method: str, n_keyframes: int) -> None:
         t = timestamp % self.duration
-        self.root_bone.set_pose(t, interpolation_method, n_keyframes, self.root_transform)
+        self.root_bone.set_pose(t, interpolation_method, n_keyframes, self.root_transform, True)
 
     def get_sorted_joints(self):
         nodes = [(self.root_bone, self.root_transform)]
@@ -22,8 +22,7 @@ class Animation:
         while len(nodes) > 0:
             current_node, parent_transform = nodes.pop()
             if current_node.index > -1:
-
-                joint_matrix =  np.transpose(current_node.inverse_bind_matrix)
+                joint_matrix = np.transpose(current_node.inverse_bind_matrix)
                 joint_matrix = current_node.local_transform @ joint_matrix
                 joint_matrix = np.transpose(joint_matrix)
 
@@ -37,7 +36,7 @@ class Animation:
         joints = [x[1] for x in sorted(joints, key=lambda x: x[0])]
         return np.array(joints, dtype='f4')
 
-       # just testing to make sure we're loading the animation data correctly
+    # just testing to make sure we're loading the animation data correctly
     def assert_channels_not_empty(self, bone: Optional[Bone] = None) -> None:
         if bone is None:
             bone = self.root_bone
@@ -52,6 +51,6 @@ class Animation:
         if bone.children:
             for child_bone in bone.children:
                 self.assert_channels_not_empty(child_bone)
-        
+
         animation = Animation(name="my_animation", duration=5.0, root_bone=root_bone, root_transform=root_transform)
         animation.assert_channels_not_empty()

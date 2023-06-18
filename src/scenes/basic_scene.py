@@ -2,12 +2,13 @@ from render.model import Model
 from render.lines import Lines
 from render.skybox import Skybox
 from scenes.scene import Scene
-from pyrr import quaternion as q, Matrix44, Vector3, Vector4
+from pyrr import Matrix44, Vector3
 from light import Light
 import imgui
 from animation.bone import Bone
 import numpy as np
 from typing import List, Optional, Tuple
+
 
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
     bone_connections = []
@@ -23,6 +24,7 @@ def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None)
                 bone_connections.extend(get_bone_connections(child, bone_position))
 
     return bone_connections
+
 
 class BasicScene(Scene):
     show_model_selection = False
@@ -117,7 +119,8 @@ class BasicScene(Scene):
             # Add a slider for line thickness
             thickness_min = 1
             thickness_max = 15
-            _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, thickness_max)
+            _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min,
+                                                         thickness_max)
             self.thickness_value = self.lines.lineWidth
 
             _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
@@ -127,7 +130,8 @@ class BasicScene(Scene):
         # Add a collapsible header for Animation Settings
         if imgui.tree_node("Animation Settings"):
             imgui.text("Select an animation")
-            _, selected_animation = imgui.combo("##animation_combo", self.current_model_entity.current_animation_id, self.current_animation_names)
+            _, selected_animation = imgui.combo("##animation_combo", self.current_model_entity.current_animation_id,
+                                                self.current_animation_names)
             if selected_animation != -1 and selected_animation != self.current_model_entity.current_animation_id:
                 self.timestamp = 0
                 self.current_model_entity.set_animation_id(selected_animation)

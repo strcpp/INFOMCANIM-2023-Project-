@@ -1,7 +1,7 @@
 import pygltflib as gltf
 import struct
 import numpy as np
-from pygltflib import Accessor, BufferView, GLTF2
+from pygltflib import Accessor, GLTF2
 
 from typing import List
 

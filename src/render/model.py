@@ -12,6 +12,9 @@ MAX_BONES = 100
 
 class Model:
     def __init__(self, app, mesh_name: str) -> None:
+        self.current_animation = None
+        self.animation_length = None
+        self.current_animation_id = None
         meshes = Mesh.instance()
         self.app = app
         self.commands = meshes.data[mesh_name][0]
@@ -85,7 +88,6 @@ class Model:
             prog['projection'].write(proj_matrix)
             prog['useTexture'].value = texture is not None
 
-            # self.animation.get_sorted_joints()
             if self.current_animation:
                 jointsMats = self.current_animation.get_sorted_joints()
                 prog['numBones'].value = len(jointsMats)  # Pass the number of bones to the shader

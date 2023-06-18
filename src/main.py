@@ -59,12 +59,6 @@ class App(glw.WindowConfig):
 
         self.writer.draw(self.fps_dims, size=20)
 
-    def key_event(self, key: int, action: str, modifiers: glw.context.base.keys.KeyModifiers) -> None:
-        keys = self.wnd.keys
-        if action == keys.ACTION_PRESS and key == keys.ESCAPE:
-            self.wnd.close()
-        self.imgui.key_event(key, action, modifiers)
-
     def mouse_drag_event(self, x: int, y: int, dx: int, dy: int) -> None:
         if not imgui.get_io().want_capture_mouse:
             # pan camera, orbit camera class does not offer this for some reason...
@@ -103,14 +97,6 @@ class App(glw.WindowConfig):
         self.mouse_pressed = False
         self.mouse_button = None
         self.imgui.mouse_release_event(x, y, button)
-
-    def mouse_position_event(self, x: int, y: int, dx: int, dy: int) -> None:
-        self.mpos = (x, y)
-        self.mdelta = (dx, dy)
-        self.imgui.mouse_position_event(x, y, dx, dy)
-
-    def unicode_char_entered(self, char: str) -> None:
-        self.imgui.unicode_char_entered(char)
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ import io
 import animation.animation as a
 from moderngl import VertexArray, Texture, Program
 
+
 # helper class for loading gltf files
 class GLTFLoader(Loader):
 
@@ -23,8 +24,8 @@ class GLTFLoader(Loader):
                 duration = get_channels(gltf, animation_id, bone_dict)
                 animation = a.Animation(gltf.animations[animation_id].name, duration, root_bone, root_transform)
                 # animation.assert_channels_not_empty()
-                animations.append(animation)   
-                
+                animations.append(animation)
+
         programs = Shaders.instance()
         prog = programs.get('base')
         commands = []
@@ -85,8 +86,8 @@ class GLTFLoader(Loader):
                 joint_indices = np.full((indices.shape[0], 4), -1, dtype='i4') if None else joint_indices
                 joint_weights = np.full((indices.shape[0], 4), 0, dtype='f4') if None else joint_weights
 
-                #print(positions.shape, joint_indices.shape, joint_weights.shape)
-                #print(joint_weights)
+                # print(positions.shape, joint_indices.shape, joint_weights.shape)
+                # print(joint_weights)
 
                 vertex_data = np.hstack((positions, normals, texcoords, joint_weights))
 

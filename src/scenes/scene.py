@@ -10,13 +10,16 @@ class Entity:
 
 class Scene:
     def __init__(self, app) -> None:
+        self.current_animation_names = None
+        self.current_model_entity = None
+        self.current_model = None
         self.app = app
         self.entities = []
 
-    def add_entity(self, name, model: Model) -> None:
+    def add_entity(self, name: str, model: Model) -> None:
         self.entities.append(Entity(name, model))
 
-    def find(self, name) -> Model:
+    def find(self, name: str) -> Model:
         for entity in self.entities:
             if entity.name == name:
                 return entity.model
