@@ -1,16 +1,23 @@
 from render.model import Model
 from render.lines import Lines
+from render.grid import Grid
 from render.skybox import Skybox
 from scenes.scene import Scene
-from render.grid import Grid
-from pyrr import quaternion as q, Matrix44, Vector3, Vector4
+from pyrr import Matrix44, Vector3
 from light import Light
 import imgui
 from animation.bone import Bone
 import numpy as np
 from typing import List, Optional, Tuple
 
+
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
+    """
+    Gets a list of bones that are connected to a given bone.
+    :param bone: Given Bone object.
+    :param parent_position: Position of the parent bone.
+    :return: List of bone connections for a given bone.
+    """
     bone_connections = []
 
     if bone.rest_transform is not None:
@@ -25,7 +32,11 @@ def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None)
 
     return bone_connections
 
+
 class BasicScene(Scene):
+    """
+    Implements the scene of the application.
+    """
     show_model_selection = False
     show_skeleton = True
     show_model = True
@@ -43,8 +54,12 @@ class BasicScene(Scene):
     light = None
     skybox = None
     timestamp = 0
+    grid = None
 
     def load(self) -> None:
+        """
+        Load method.
+        """
         self.models = ['Batman', 'Joker']
 
         for model in self.models:
@@ -52,7 +67,7 @@ class BasicScene(Scene):
 
         self.set_model('Batman')
 
-        self.bones = self.find(self.current_model).get_bones()
+        self.bones = self.find(self.current_model).get_root_bone()
 
         self.lines = Lines(self.app, lineWidth=1)
         self.light = Light(
@@ -62,7 +77,7 @@ class BasicScene(Scene):
 
         self.skybox = Skybox(self.app, skybox='clouds', ext='png')
 
-        self.grid = Grid(self.app, color=[0.9, 0.9, 0.9], size = 500)
+        self.grid = Grid(self.app, color=[0.9, 0.9, 0.9], size=500)
 
         self.timestamp = 0
 
@@ -70,9 +85,16 @@ class BasicScene(Scene):
         self.max_keyframes = self.n_keyframes
 
     def unload(self) -> None:
+        """
+        Unload method.
+        """
         self.entities.clear()
 
     def update(self, dt: float) -> None:
+        """
+        Update method.
+        :param dt: Update time step.
+        """
         animation_length = self.current_model_entity.animation_length
 
         if self.animation_speed > 0:  # Forward animation
@@ -90,10 +112,13 @@ class BasicScene(Scene):
                 self.timestamp = animation_length
 
         self.current_model_entity.set_pose(self.timestamp, self.interpolation_method, self.n_keyframes)
-        bone_lines = get_bone_connections(self.current_model_entity.get_bones())
+        bone_lines = get_bone_connections(self.current_model_entity.get_root_bone())
         self.lines.update(bone_lines)
 
     def render_ui(self) -> None:
+        """
+        Renders the UI.
+        """
         imgui.new_frame()
 
         # Change the style of the entire ImGui interface
@@ -120,7 +145,8 @@ class BasicScene(Scene):
             # Add a slider for line thickness
             thickness_min = 1
             thickness_max = 15
-            _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min, thickness_max)
+            _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min,
+                                                         thickness_max)
             self.thickness_value = self.lines.lineWidth
 
             _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
@@ -130,7 +156,8 @@ class BasicScene(Scene):
         # Add a collapsible header for Animation Settings
         if imgui.tree_node("Animation Settings"):
             imgui.text("Select an animation")
-            _, selected_animation = imgui.combo("##animation_combo", self.current_model_entity.current_animation_id, self.current_animation_names)
+            _, selected_animation = imgui.combo("##animation_combo", self.current_model_entity.current_animation_id,
+                                                self.current_animation_names)
             if selected_animation != -1 and selected_animation != self.current_model_entity.current_animation_id:
                 self.timestamp = 0
                 self.current_model_entity.set_animation_id(selected_animation)
@@ -232,6 +259,9 @@ class BasicScene(Scene):
         self.app.imgui.render(imgui.get_draw_data())
 
     def render(self) -> None:
+        """
+        Renders all objects in the scene.
+        """
         self.skybox.draw(self.app.camera.projection.matrix, self.app.camera.matrix)
         if self.show_model:
             self.find(self.current_model).draw(
@@ -239,8 +269,9 @@ class BasicScene(Scene):
                 self.app.camera.matrix,
                 self.light
             )
+
         self.grid.draw(self.app.camera.projection.matrix, self.app.camera, self.timestamp)
-        
+
         self.render_ui()
 
         if self.show_skeleton:

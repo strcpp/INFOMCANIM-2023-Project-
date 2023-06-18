@@ -3,42 +3,87 @@ from render.model import Model
 
 
 class Entity:
+    """
+    Represents an entity in the scene.
+    """
     def __init__(self, name: str, model: Model):
+        """
+        Constructor.
+        :param name: Entity name.
+        :param model: The model associated with the entity.
+        """
         self.name = name
         self.model = model
 
 
 class Scene:
+    """
+    Represents a scene in the application.
+    """
     def __init__(self, app) -> None:
+        """
+        Constructor.
+        :param app: Glw app.
+        """
+        self.current_animation_names = None
+        self.current_model_entity = None
+        self.current_model = None
         self.app = app
         self.entities = []
 
-    def add_entity(self, name, model: Model) -> None:
+    def add_entity(self, name: str, model: Model) -> None:
+        """
+        Adds an entity to the scene.
+        :param name: Entity name.
+        :param model: The model associated with the entity.
+        """
         self.entities.append(Entity(name, model))
 
-    def find(self, name) -> Model:
+    def find(self, name: str) -> Model:
+        """
+        Finds a model in the scene based on its name.
+        :param name: Name of the model to find.
+        :return: The found model, or None if not found.
+        """
         for entity in self.entities:
             if entity.name == name:
                 return entity.model
         return None
 
     def set_model(self, model_name: str):
+        """
+        Initializes the current active model, associates it with an entity and retrieves its animations.
+        :param model_name: Name of the model to initialize.
+        """
         self.current_model = model_name
         self.current_model_entity = self.find(self.current_model)
         self.current_animation_names = list(map(lambda a: a.name, self.current_model_entity.animations))
 
     @abstractmethod
     def load(self) -> None:
+        """
+        Abstract method for loading the scene.
+        """
         pass
 
     @abstractmethod
     def unload(self) -> None:
+        """
+        Abstract method for unloading the scene.
+        """
         pass
 
     @abstractmethod
     def update(self, dt: float) -> None:
+        """
+        Abstract method for updating the scene.
+        :param dt: Update time step.
+        """
         pass
 
     @abstractmethod
     def render(self) -> None:
+        """
+        Abstract method for rendering the scene.
+        """
         pass

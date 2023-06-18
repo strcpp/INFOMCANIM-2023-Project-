@@ -1,12 +1,17 @@
 import pygltflib as gltf
 import struct
 import numpy as np
-from pygltflib import Accessor, BufferView, GLTF2
+from pygltflib import Accessor, GLTF2
 
 from typing import List
 
 
 def accessor_type_count(accessor: Accessor) -> int:
+    """
+
+    :param accessor:
+    :return:
+    """
     if accessor.type == "SCALAR":
         return 1
     elif accessor.type == "VEC2":
@@ -26,6 +31,11 @@ def accessor_type_count(accessor: Accessor) -> int:
 
 
 def accessor_component_type_fmt(accessor: Accessor) -> str:
+    """
+
+    :param accessor:
+    :return:
+    """
     if accessor.componentType == gltf.BYTE:
         return "b"
     elif accessor.componentType == gltf.UNSIGNED_BYTE:
@@ -43,6 +53,11 @@ def accessor_component_type_fmt(accessor: Accessor) -> str:
 
 
 def accessor_type_fmt(accessor: Accessor) -> str:
+    """
+
+    :param accessor:
+    :return:
+    """
     fmt = accessor_component_type_fmt(accessor)
     if accessor.type == "SCALAR":
         return f'<{fmt}'
@@ -63,6 +78,12 @@ def accessor_type_fmt(accessor: Accessor) -> str:
 
 
 def get_image_data(gltf: GLTF2, bufferView: int) -> List[int]:
+    """
+
+    :param gltf:
+    :param bufferView:
+    :return:
+    """
     buffer_view = gltf.bufferViews[bufferView]
     buffer = gltf.buffers[buffer_view.buffer]
     data = gltf.get_data_from_buffer_uri(buffer.uri)
@@ -74,6 +95,13 @@ def get_image_data(gltf: GLTF2, bufferView: int) -> List[int]:
 
 
 def get_accessor_data(gltf: GLTF2, accessor: Accessor, dtype: str) -> np.ndarray:
+    """
+
+    :param gltf:
+    :param accessor:
+    :param dtype:
+    :return:
+    """
     buffer_view = gltf.bufferViews[accessor.bufferView]
     buffer = gltf.buffers[buffer_view.buffer]
     data = gltf.get_data_from_buffer_uri(buffer.uri)

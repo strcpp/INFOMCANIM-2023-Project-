@@ -9,10 +9,18 @@ import io
 import animation.animation as a
 from moderngl import VertexArray, Texture, Program
 
-# helper class for loading gltf files
+
 class GLTFLoader(Loader):
+    """
+    Helper class for loading gltf files
+    """
 
     def from_file(self, file_path: str) -> Tuple[List[Tuple[VertexArray, Texture, Program, None]], List[Animation]]:
+        """
+        Loads a gltf file from a given path.
+        :param file_path: File path.
+        :return: Gltf file contents.
+        """
         gltf = GLTF2().load(file_path)
 
         animations = []
@@ -20,11 +28,11 @@ class GLTFLoader(Loader):
 
             for animation_id in list(range(0, len(gltf.animations))):
                 root_bone, root_transform, bone_dict = get_bones(gltf, gltf.skins[0])
-                duration = get_channels(gltf, animation_id, bone_dict)
+                duration = get_animation_duration(gltf, animation_id, bone_dict)
                 animation = a.Animation(gltf.animations[animation_id].name, duration, root_bone, root_transform)
                 # animation.assert_channels_not_empty()
-                animations.append(animation)   
-                
+                animations.append(animation)
+
         programs = Shaders.instance()
         prog = programs.get('base')
         commands = []
@@ -85,8 +93,8 @@ class GLTFLoader(Loader):
                 joint_indices = np.full((indices.shape[0], 4), -1, dtype='i4') if None else joint_indices
                 joint_weights = np.full((indices.shape[0], 4), 0, dtype='f4') if None else joint_weights
 
-                #print(positions.shape, joint_indices.shape, joint_weights.shape)
-                #print(joint_weights)
+                # print(positions.shape, joint_indices.shape, joint_weights.shape)
+                # print(joint_weights)
 
                 vertex_data = np.hstack((positions, normals, texcoords, joint_weights))
 

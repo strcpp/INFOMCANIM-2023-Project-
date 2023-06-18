@@ -1,12 +1,17 @@
 from animation.bone import Bone
 from animation.keyframe import Keyframe
-from pyrr import quaternion as q, Quaternion, Vector3, Matrix44
+from pyrr import Matrix44
 import numpy as np
 from pygltflib import *
 from loaders.GltfLoader.gltf_loader_helpers import *
 
 
 def build_rest_matrix(node):
+    """
+
+    :param node:
+    :return:
+    """
     matrix = Matrix44(np.identity(4, dtype=np.float32))
 
     if node.scale is not None:
@@ -25,9 +30,12 @@ def build_rest_matrix(node):
 
 
 def get_inv_bind(gltf, skin):
+    """
 
-    # print(skin.joints)
-
+    :param gltf:
+    :param skin:
+    :return:
+    """
     inverse_bind_matrices_accessor = gltf.accessors[skin.inverseBindMatrices]
     inverse_bind_matrices = get_accessor_data(gltf, inverse_bind_matrices_accessor, 'f4')
     inverse_bind_matrices = inverse_bind_matrices.reshape(-1, 4, 4)
@@ -36,15 +44,22 @@ def get_inv_bind(gltf, skin):
 
 
 def find_root_node(gltf, skin):
+    """
+
+    :param gltf:
+    :param skin:
+    :return:
+    """
     def traverse_node_hierarchy(node_id, skin_joints, parent_transform=None):
+        """
+
+        :param node_id:
+        :param skin_joints:
+        :param parent_transform:
+        :return:
+        """
         node = gltf.nodes[node_id]
         local_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
-
-        # Multiply by the parent's transform if it exists
-        # if parent_transform is not None:
-        #     local_transform = parent_transform * node_transform
-        # else:
-        #     local_transform = node_transform
 
         if node_id in skin_joints:
             return node_id, parent_transform
@@ -69,8 +84,22 @@ def find_root_node(gltf, skin):
 
 
 def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]:
+    """
+
+    :param gltf:
+    :param skin:
+    :return:
+    """
     def build_bone_hierarchy(gltf: GLTF2, node_id: int, inv_binds: Dict[int, np.ndarray],
                              bone_dict: Dict[str, Bone]) -> Bone:
+        """
+
+        :param gltf:
+        :param node_id:
+        :param inv_binds:
+        :param bone_dict:
+        :return:
+        """
 
         node = gltf.nodes[node_id]
 
@@ -80,8 +109,8 @@ def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]
         children_bones = []
 
         if node.children is not None:
-            for id in node.children:
-                child_bone = build_bone_hierarchy(gltf, id, inv_binds, bone_dict)
+            for child_id in node.children:
+                child_bone = build_bone_hierarchy(gltf, child_id, inv_binds, bone_dict)
                 children_bones.append(child_bone)
 
         bone_index = skin.joints.index(node_id) if node_id in skin.joints else -1
@@ -90,8 +119,6 @@ def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]
                     children=children_bones, index=bone_index)
         bone_dict[node.name] = bone
         return bone
-
-    #print(skin.joints, len(skin.joints))
 
     root_node, root_transform = find_root_node(gltf, skin)
     inv_binds = get_inv_bind(gltf, skin)
@@ -104,7 +131,14 @@ def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]
     return root_bone, root_transform, bone_dict
 
 
-def get_channels(gltf: GLTF2, i: int, bone_dict: Dict[str, Bone]) -> float:
+def get_animation_duration(gltf: GLTF2, i: int, bone_dict: Dict[str, Bone]) -> float:
+    """
+    Gets the duration of an animation of a gltf file.
+    :param gltf: Gltf file.
+    :param i: Animation index.
+    :param bone_dict: Dictionary of Bones.
+    :return: Animation duration
+    """
     animation = gltf.animations[i]
     duration = 0.0
 

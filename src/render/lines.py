@@ -1,5 +1,5 @@
 import numpy as np
-from pyrr import quaternion as q, Quaternion, Vector3, Matrix44
+from pyrr import Quaternion, Vector3, Matrix44
 from render.shaders import Shaders
 import moderngl
 from typing import List, Tuple
@@ -29,7 +29,17 @@ def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.
 
 
 class Lines:
+    """
+    Implements a model's skeleton as lines.
+    """
     def __init__(self, app, lineWidth: int = 1, color=None, lines=None) -> None:
+        """
+        Constructor.
+        :param app: Glw app.
+        :param lineWidth: Width of lines.
+        :param color: Color of lines.
+        :param lines: List of already drawn lines.
+        """
         if lines is None:
             lines = []
         if color is None:
@@ -56,6 +66,10 @@ class Lines:
         self.scale = Vector3([1.0, 1.0, 1.0])
 
     def update(self, lines: List[Tuple[Matrix44, Matrix44]]) -> None:
+        """
+        Update method.
+        :param lines: List of already drawn lines.
+        """
         vertices, indices = build_lines(lines)
         self.vbo.clear()
         self.ibo.clear()
@@ -63,6 +77,10 @@ class Lines:
         self.ibo.write(indices)
 
     def get_model_matrix(self) -> np.ndarray:
+        """
+        Returns the matrix of the model.
+        :return: Model matrix.
+        """
         trans = Matrix44.from_translation(self.translation)
         rot = Matrix44.from_quaternion(self.rotation)
         scale = Matrix44.from_scale(self.scale)
@@ -71,7 +89,11 @@ class Lines:
         return np.array(model, dtype='f4')
 
     def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44) -> None:
-
+        """
+        Draws the skeleton lines.
+        :param proj_matrix: Projection matrix.
+        :param view_matrix: View matrix.
+        """
         self.line_prog["img_width"].value = self.app.window_size[0]
         self.line_prog["img_height"].value = self.app.window_size[1]
         self.line_prog["line_thickness"].value = self.lineWidth

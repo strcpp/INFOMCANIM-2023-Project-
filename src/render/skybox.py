@@ -1,11 +1,21 @@
-import imageio as io
+import imageio.v2 as io
 import os
 from render.shaders import Shaders
 import numpy as np
 from pyrr import Matrix44
 
+
 class Skybox:
-    def __init__(self, app, skybox: str, ext: str = 'png'):
+    """
+    Implements a skybox.
+    """
+    def __init__(self, app, skybox: str, ext: str = 'png') -> None:
+        """
+        Constructor.
+        :param app: Glw app.
+        :param skybox: Skybox filename.
+        :param ext: Skybox file extension.
+        """
         self.app = app
         programs = Shaders.instance()
         self.skybox_prog = programs.get('skybox')
@@ -23,13 +33,18 @@ class Skybox:
         z = 0.9999
         vertices = [(-1, -1, z), (3, -1, z), (-1, 3, z)]
         vertex_data = np.array(vertices, dtype='f4')
-        self.vbo = self.app.ctx.buffer(vertex_data) 
+        self.vbo = self.app.ctx.buffer(vertex_data)
 
         self.skybox_prog['u_texture_skybox'] = 0
         self.texture_cube.use(location=0)
 
         self.vao = self.app.ctx.simple_vertex_array(self.skybox_prog, self.vbo, 'position')
 
-    def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44):
+    def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44) -> None:
+        """
+        Draws a skybox.
+        :param proj_matrix: Projection matrix.
+        :param view_matrix: View matrix.
+        """
         self.skybox_prog['m_invProjView'].write(np.linalg.inv(proj_matrix * view_matrix))
         self.vao.render()
