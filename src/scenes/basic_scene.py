@@ -2,6 +2,7 @@ from render.model import Model
 from render.lines import Lines
 from render.skybox import Skybox
 from scenes.scene import Scene
+from render.grid import Grid
 from pyrr import quaternion as q, Matrix44, Vector3, Vector4
 from light import Light
 import imgui
@@ -60,6 +61,8 @@ class BasicScene(Scene):
         )
 
         self.skybox = Skybox(self.app, skybox='clouds', ext='png')
+
+        self.grid = Grid(self.app, color=[0.9, 0.9, 0.9], size = 500)
 
         self.timestamp = 0
 
@@ -236,7 +239,8 @@ class BasicScene(Scene):
                 self.app.camera.matrix,
                 self.light
             )
-
+        self.grid.draw(self.app.camera.projection.matrix, self.app.camera, self.timestamp)
+        
         self.render_ui()
 
         if self.show_skeleton:
