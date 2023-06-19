@@ -1,4 +1,4 @@
-import imageio.v2 as io
+import imageio as io
 import os
 from render.shaders import Shaders
 import numpy as np

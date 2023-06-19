@@ -125,8 +125,8 @@ class BasicScene(Scene):
         imgui.style_colors_classic()
 
         # Add an ImGui window
-        imgui.begin("Settings")
-
+        imgui.begin("Settings", flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE)
+        
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
 
@@ -190,14 +190,14 @@ class BasicScene(Scene):
             imgui.pop_style_color()
 
             if self.animation_speed != 0:
-                button_label = "Stop"
-                button_color = (0.694, 0.282, 0.282, 1.0)  # Red color for Stop button
+                play_stop_button_label = "Stop"
+                play_stop_button_color = (0.694, 0.282, 0.282, 1.0)  # Red color for Stop button
             else:
-                button_label = "Play"
-                button_color = (0.282, 0.361, 0.306, 1.0)  # Green color for Play button
+                play_stop_button_label = "Play"
+                play_stop_button_color = (0.282, 0.361, 0.306, 1.0)  # Green color for Play button
 
-            imgui.push_style_color(imgui.COLOR_BUTTON, *button_color)
-            if imgui.button(button_label):
+            imgui.push_style_color(imgui.COLOR_BUTTON, *play_stop_button_color)
+            if imgui.button(play_stop_button_label):
                 if self.animation_speed == 0:
                     self.animation_speed = 1.0
                 else:
@@ -205,9 +205,17 @@ class BasicScene(Scene):
             imgui.pop_style_color()
             imgui.tree_pop()
 
-            forward_button_color = button_color
-            if self.animation_speed == 1:
-                forward_button_color = button_color
+            default_button_color = (0.694, 0.282, 0.282, 1.0)
+            active_button_color = (0.282, 0.361, 0.306, 1.0)
+
+            
+            imgui.same_line()  # Add this line to align the buttons in a row
+
+            # Forward button
+            if self.animation_speed != 1:
+                forward_button_color = default_button_color
+            else:
+                forward_button_color = active_button_color
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *forward_button_color)
             if imgui.button("Forward"):
@@ -215,13 +223,15 @@ class BasicScene(Scene):
                     self.animation_speed = 1
                 else:
                     self.animation_speed = self.previous_animation_speed
-
-            imgui.same_line()
             imgui.pop_style_color()
 
-            backward_button_color = button_color
-            if self.animation_speed == -1:
-                backward_button_color = button_color
+            imgui.same_line()  # Add this line to align the buttons in a row
+
+            # Backward button
+            if self.animation_speed != -1:
+                backward_button_color = default_button_color
+            else:
+                backward_button_color = active_button_color
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *backward_button_color)
             if imgui.button("Backward"):
@@ -229,34 +239,39 @@ class BasicScene(Scene):
                     self.animation_speed = -1
                 else:
                     self.animation_speed = self.previous_animation_speed
-
             imgui.pop_style_color()
 
-            linear_button_color = button_color
-            if self.interpolation_method == "linear":
-                linear_button_color = button_color
+            imgui.same_line()  # Add this line to align the buttons in a row
+
+            # Linear button
+            if self.interpolation_method != "linear":
+                linear_button_color = default_button_color
+            else:
+                linear_button_color = active_button_color
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *linear_button_color)
             if imgui.button("Linear"):
                 self.interpolation_method = "linear"
-
             imgui.pop_style_color()
-            imgui.same_line()
 
-            hermite_button_color = button_color
-            if self.interpolation_method == "hermite":
-                hermite_button_color = button_color
+            imgui.same_line()  # Add this line to align the buttons in a row
+
+            # Hermite button
+            if self.interpolation_method != "hermite":
+                hermite_button_color = default_button_color
+            else:
+                hermite_button_color = active_button_color
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *hermite_button_color)
             if imgui.button("Hermite"):
                 self.interpolation_method = "hermite"
-
             imgui.pop_style_color()
 
         imgui.end()
         imgui.render()
 
         self.app.imgui.render(imgui.get_draw_data())
+
 
     def render(self) -> None:
         """
