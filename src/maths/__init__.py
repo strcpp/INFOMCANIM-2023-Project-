@@ -94,7 +94,11 @@ def slerp(quat1: np.ndarray, quat2: np.ndarray, timestamp: float, timestamp_1: f
     :param timestamp_2: Timestamp of the second quaternion.
     :return: Interpolated quaternion.
     """
-    slerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
+
+    if(timestamp_2 ==  timestamp_1):
+        slerp_amount = 0
+    else:
+        slerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
     t = clip(np.float32(slerp_amount), np.float32(0.0), np.float32(1.0))
 
     dot = 0.0
@@ -127,8 +131,12 @@ def lerp(vector_1: np.ndarray, vector_2: np.ndarray, timestamp: float, timestamp
     :param timestamp_2: Timestamp of the second vector.
     :return: Interpolated vector.
     """
-    lerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
-    lerp_amount = clip(np.float32(lerp_amount), np.float32(0.0), np.float32(1.0))
+
+    if(timestamp_1 == timestamp_2):
+        lerp_amount = 0.0
+    else:
+        lerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
+        lerp_amount = clip(np.float32(lerp_amount), np.float32(0.0), np.float32(1.0))
 
     return vector_1 * (1 - lerp_amount) + vector_2 * lerp_amount
 
