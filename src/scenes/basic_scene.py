@@ -83,6 +83,8 @@ class BasicScene(Scene):
 
         self.n_keyframes = self.find(self.current_model).get_number_of_keyframes()
         self.max_keyframes = self.n_keyframes
+        self.forward = True
+
 
     def unload(self) -> None:
         """
@@ -97,14 +99,14 @@ class BasicScene(Scene):
         """
         animation_length = self.current_model_entity.animation_length
 
-        if self.animation_speed > 0:  # Forward animation
+        if self.forward:  # Forward animation
             self.timestamp += dt * self.animation_speed
 
             # Check if the animation reached the end
             if self.timestamp >= animation_length:
                 self.timestamp = 0.0
 
-        elif self.animation_speed < 0:  # Backward animation
+        else:  # Backward animation
             self.timestamp -= dt * abs(self.animation_speed)
 
             # Check if the animation reached the beginning
@@ -212,33 +214,30 @@ class BasicScene(Scene):
             imgui.same_line()  # Add this line to align the buttons in a row
 
             # Forward button
-            if self.animation_speed != 1:
+            if not self.forward:
                 forward_button_color = default_button_color
             else:
                 forward_button_color = active_button_color
 
-            imgui.push_style_color(imgui.COLOR_BUTTON, *forward_button_color)
+            imgui.push_style_color(imgui.COLOR_BUTTON, * forward_button_color)
             if imgui.button("Forward"):
-                if self.animation_speed != 1:
-                    self.animation_speed = 1
-                else:
-                    self.animation_speed = self.previous_animation_speed
+                self.forward = True
+                self.animation_speed = self.previous_animation_speed
             imgui.pop_style_color()
 
             imgui.same_line()  # Add this line to align the buttons in a row
 
             # Backward button
-            if self.animation_speed != -1:
+            if self.forward:
                 backward_button_color = default_button_color
             else:
                 backward_button_color = active_button_color
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *backward_button_color)
             if imgui.button("Backward"):
-                if self.animation_speed != -1:
-                    self.animation_speed = -1
-                else:
-                    self.animation_speed = self.previous_animation_speed
+                self.forward = False
+                self.animation_speed = self.previous_animation_speed
+
             imgui.pop_style_color()
 
             imgui.same_line()  # Add this line to align the buttons in a row
