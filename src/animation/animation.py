@@ -58,7 +58,7 @@ class Animation:
 
     def assert_channels_not_empty(self, bone: Optional[Bone] = None) -> None:
         """
-        Ensures that the animation data is loaded correctly
+        Ensures that the animation data is loaded correctly.
         :param bone: Input Bone.
         """
         if bone is None:

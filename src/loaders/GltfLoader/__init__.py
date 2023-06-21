@@ -12,7 +12,7 @@ from moderngl import VertexArray, Texture, Program
 
 class GLTFLoader(Loader):
     """
-    Helper class for loading gltf files
+    Helper class for loading gltf files.
     """
 
     def from_file(self, file_path: str) -> Tuple[List[Tuple[VertexArray, Texture, Program, None]], List[Animation]]:

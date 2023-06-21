@@ -20,8 +20,8 @@ class Shaders:
 
     def __init__(self, app) -> None:
         """
-        Constructor
-        :param app: Main app
+        Constructor.
+        :param app: Main app.
         """
         if Shaders._instance is not None:
             raise RuntimeError("Shaders is a singleton and should not be instantiated more than once")
@@ -42,6 +42,6 @@ class Shaders:
 
     def destroy(self) -> None:
         """
-        Destroys the shader
+        Destroys the shader.
         """
         [shader.release() for shader in self.shaders.values()]

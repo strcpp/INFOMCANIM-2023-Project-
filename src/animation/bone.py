@@ -5,7 +5,7 @@ from animation.keyframe import Keyframe
 from maths import *
 from numba import njit
 
-# preallocate matrices
+# Preallocate matrices
 translation = np.identity(4)
 rotation = np.identity(4)
 scale = np.identity(4)
@@ -37,7 +37,6 @@ class Bone:
     """
     Implements each bone of the model.
     """
-
     # Static variables that are shared for each Bone instance. This way we don't re-calculate them for each bone, but
     # only for the parent one.
     timestamp_norm = 0
@@ -167,8 +166,8 @@ class Bone:
                 rotation_tangent_v1 = calculate_rotation_tangent(rotation_k1, rotation_k3,
                                                                  Bone.timestamp_3, Bone.timestamp_1)
 
-                inter_rotation = hermite_rotation(rotation_k1, rotation_k2,
-                                                  rotation_tangent_v0, rotation_tangent_v1, Bone.timestamp_norm)
+                inter_rotation = hermite_rotation(rotation_k1, rotation_k2, rotation_tangent_v0, rotation_tangent_v1,
+                                                  Bone.timestamp_norm)
 
                 scale_tangent_v0 = calculate_scale_tangent(scale_k0, scale_k2, Bone.timestamp_2, Bone.timestamp_0)
                 scale_tangent_v1 = calculate_scale_tangent(scale_k1, scale_k3, Bone.timestamp_3, Bone.timestamp_1)

@@ -32,11 +32,11 @@ class Lines:
     """
     Implements a model's skeleton as lines.
     """
-    def __init__(self, app, lineWidth: int = 1, color=None, lines=None) -> None:
+    def __init__(self, app, line_width: int = 1, color=None, lines=None) -> None:
         """
         Constructor.
         :param app: Glw app.
-        :param lineWidth: Width of lines.
+        :param line_width: Width of lines.
         :param color: Color of lines.
         :param lines: List of already drawn lines.
         """
@@ -45,7 +45,7 @@ class Lines:
         if color is None:
             color = [1, 0, 0, 1]
         self.app = app
-        self.lineWidth = lineWidth
+        self.lineWidth = line_width
         self.color = color
         programs = Shaders.instance()
         self.line_prog = programs.get('lines')

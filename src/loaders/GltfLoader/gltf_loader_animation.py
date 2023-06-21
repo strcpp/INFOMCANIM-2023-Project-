@@ -137,7 +137,7 @@ def get_animation_duration(gltf: GLTF2, i: int, bone_dict: Dict[str, Bone]) -> f
     :param gltf: Gltf file.
     :param i: Animation index.
     :param bone_dict: Dictionary of Bones.
-    :return: Animation duration
+    :return: Animation duration.
     """
     animation = gltf.animations[i]
     duration = 0.0

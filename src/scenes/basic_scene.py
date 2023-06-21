@@ -55,6 +55,7 @@ class BasicScene(Scene):
     skybox = None
     timestamp = 0
     grid = None
+    forward = True
 
     def load(self) -> None:
         """
@@ -84,7 +85,6 @@ class BasicScene(Scene):
         self.n_keyframes = self.find(self.current_model).get_number_of_keyframes()
         self.max_keyframes = self.n_keyframes
         self.forward = True
-
 
     def unload(self) -> None:
         """
@@ -218,7 +218,7 @@ class BasicScene(Scene):
             else:
                 forward_button_color = active_button_color
 
-            imgui.push_style_color(imgui.COLOR_BUTTON, * forward_button_color)
+            imgui.push_style_color(imgui.COLOR_BUTTON, *forward_button_color)
             if imgui.button("Forward"):
                 self.forward = True
                 self.animation_speed = self.previous_animation_speed
