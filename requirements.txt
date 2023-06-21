@@ -7,3 +7,4 @@ pyrr
 numba
 imageio
 tqdm
+pygame

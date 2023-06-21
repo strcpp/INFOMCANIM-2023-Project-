@@ -9,6 +9,7 @@ import imgui
 from animation.bone import Bone
 import numpy as np
 from typing import List, Optional, Tuple
+import pygame
 
 
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
@@ -56,6 +57,7 @@ class BasicScene(Scene):
     timestamp = 0
     grid = None
     forward = True
+    current_playback_position = 0
 
     def load(self) -> None:
         """
@@ -86,11 +88,18 @@ class BasicScene(Scene):
         self.max_keyframes = self.n_keyframes
         self.forward = True
 
+        # Load and play the MP3 file
+        pygame.mixer.init()
+        pygame.mixer.music.load("resources/soundtrack.mp3")
+        pygame.mixer.music.play(-1)  # -1 indicates infinite looping
+
     def unload(self) -> None:
         """
         Unload method.
         """
         self.entities.clear()
+        self.current_playback_position = pygame.mixer.music.get_pos()  # Store the current playback position
+        pygame.mixer.music.stop()
 
     def update(self, dt: float) -> None:
         """
@@ -264,6 +273,43 @@ class BasicScene(Scene):
             if imgui.button("Hermite"):
                 self.interpolation_method = "hermite"
             imgui.pop_style_color()
+
+         # Add a collapsible header for Soundtrack Settings
+        if imgui.tree_node("Soundtrack Settings"):
+            # Add a slider for volume
+            volume_min = 0.0
+            volume_max = 1.0
+            _, volume = imgui.slider_float("Volume", pygame.mixer.music.get_volume(), volume_min, volume_max)
+            pygame.mixer.music.set_volume(volume)
+
+            # Get the current state of the music player
+            is_playing = pygame.mixer.music.get_busy()
+
+            # Determine the label and color for the play/stop button
+            if is_playing:
+                play_stop_button_label = "Stop"
+                play_stop_button_color = (0.694, 0.282, 0.282, 1.0)  # Red color for Stop button
+            else:
+                play_stop_button_label = "Play"
+                play_stop_button_color = (0.282, 0.361, 0.306, 1.0)  # Green color for Play button
+
+            # Set the button color
+            imgui.push_style_color(imgui.COLOR_BUTTON, *play_stop_button_color)
+
+            # Display the play/stop button
+            if imgui.button(play_stop_button_label):
+                if is_playing:
+                    pygame.mixer.music.pause()
+                    self.current_playback_position = pygame.mixer.music.get_pos()  # Store the current playback position
+                else:
+                    if self.current_playback_position > 0:
+                        pygame.mixer.music.unpause()  # Resume from the stored playback position
+                    else:
+                        pygame.mixer.music.play(-1)  # Start from the beginning
+
+            imgui.pop_style_color()
+
+            imgui.tree_pop()
 
         imgui.end()
         imgui.render()
