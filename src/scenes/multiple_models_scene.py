@@ -14,9 +14,6 @@ class MultipleModelsScene(Scene):
     """
     Implements the scene of the application.
     """
-    show_model_selection = False
-    show_skeleton = True
-    show_model = True
     thickness_value = 1
     animation_speed = 1
     default_speed = False
@@ -24,7 +21,6 @@ class MultipleModelsScene(Scene):
     n_keyframes = 2
     max_keyframes = 2
     models = []
-    current_model = ""
     lines = None
     light = None
     skybox = None
@@ -62,7 +58,8 @@ class MultipleModelsScene(Scene):
         Update method.
         :param dt: Update time step.
         """
-        for model_name in self.model_names_in_scene:
+        for idx, model_name in enumerate(self.model_names_in_scene):
+            
             model = self.find(model_name)
             model.update(dt, self.interpolation_method)
 
@@ -81,19 +78,22 @@ class MultipleModelsScene(Scene):
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
 
-        _, self.current_model_to_add = imgui.combo("##model_combo", self.current_model_to_add, self.model_names)
+        _, self.current_model_to_add = imgui.combo("##add_model_combo", self.current_model_to_add, self.model_names)
         if imgui.button("Add Model"):
             model_name = self.add_model(self.model_names[self.current_model_to_add])
             self.set_model(model_name)
 
         # Add a collapsible header for Model Settings
-        if imgui.tree_node("Model Selection") and len(self.model_names_in_scene) > 0:
-            _, selected_model = imgui.combo('##model_combo', self.model_names_in_scene.index(self.current_model), self.model_names_in_scene)
-            if selected_model != -1:
-                selected_model_name = self.model_names_in_scene[selected_model]
-                if selected_model_name != self.current_model:
-                    self.set_model(selected_model_name)
-            imgui.tree_pop()
+        # if imgui.tree_node("Model Selection") and len(self.model_names_in_scene) > 0:
+        models_in_scene = self.model_names_in_scene
+        if len(self.model_names_in_scene) == 0:
+            models_in_scene = [""]
+        _, selected_model = imgui.combo('##select_model_combo', models_in_scene.index(self.current_model), models_in_scene)
+        if selected_model != -1 and len(self.model_names_in_scene) > 0:
+            selected_model_name = self.model_names_in_scene[selected_model]
+            if selected_model_name != self.current_model:
+                self.set_model(selected_model_name)
+        # imgui.tree_pop()
 
         # Add a collapsible header for Line Settings
         if imgui.tree_node("Skeleton Settings"):
@@ -104,8 +104,8 @@ class MultipleModelsScene(Scene):
                                                          thickness_max)
             self.thickness_value = self.lines.lineWidth
 
-            _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
-            _, self.show_model = imgui.checkbox("Model", self.show_model)
+            _, self.current_model_entity.show_skeleton = imgui.checkbox("Skeleton", self.current_model_entity.show_skeleton)
+            _, self.current_model_entity.show_model = imgui.checkbox("Model", self.current_model_entity.show_model)
             imgui.tree_pop()
 
         # Add a collapsible header for Animation Settings
@@ -234,18 +234,21 @@ class MultipleModelsScene(Scene):
 
         for model_name in self.model_names_in_scene:
             model = self.find(model_name)
-            if self.show_model:
+            if model.show_model:
                 model.draw(
                     self.app.camera.projection.matrix,
                     self.app.camera.matrix,
                     self.light
                 )
                 
-            if self.show_skeleton:
-                bone_lines = get_bone_connections(model.get_root_bone())
-                self.lines.update(bone_lines)
-                self.lines.draw(self.app.camera.projection.matrix, self.app.camera.matrix)
 
         self.grid.draw(self.app.camera.projection.matrix, self.app.camera, self.timestamp)
 
         self.render_ui()
+
+        for model_name in self.model_names_in_scene:
+            model = self.find(model_name)
+            if model.show_skeleton:
+                bone_lines = get_bone_connections(model.get_root_bone())
+                self.lines.update(bone_lines)
+                self.lines.draw(self.app.camera.projection.matrix, self.app.camera.matrix)

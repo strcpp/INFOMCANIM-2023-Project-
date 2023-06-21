@@ -4,7 +4,7 @@ from render.shaders import Shaders
 import moderngl
 from typing import List, Tuple
 
-MAX_LINE_BUFFER_SIZE = 2400
+MAX_LINE_BUFFER_SIZE = 5000
 
 
 def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.ndarray]:
@@ -26,7 +26,6 @@ def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.
     index_data = np.array(indices, dtype=np.uint32)
 
     return vertex_data, index_data
-
 
 class Lines:
     """
@@ -61,7 +60,8 @@ class Lines:
 
         self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position", index_buffer=self.ibo)
 
-        self.translation = Vector3()
+        self.translation = Vector3([0,0,0])
+
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 

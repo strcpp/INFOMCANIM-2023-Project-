@@ -27,7 +27,7 @@ class Scene:
         """
         self.current_animation_names = None
         self.current_model_entity = None
-        self.current_model = None
+        self.current_model = ""
         self.model_names_in_scene = []
         self.app = app
         self.entities = []
@@ -43,8 +43,8 @@ class Scene:
 
     def add_model(self, name: str) -> str: 
         self.model_counter += 1
-        unique_name = name #f'{str(self.model_counter)} - {name}'
-        self.add_entity(unique_name, Model(self.app, unique_name))
+        unique_name = f'{str(self.model_counter)} - {name}'
+        self.add_entity(unique_name, Model(self.app, name))
         self.model_names_in_scene.append(unique_name)
 
         return unique_name

@@ -4,28 +4,42 @@ import numpy as np
 from typing import Optional
 from animation.bone import Bone
 from light import Light
+from copy import copy
+from animation.animation import Animation
 
 # Define MAX_BONES
 MAX_BONES = 100
 
+def copy_bones(bone: Bone) -> Bone:
+    copied_children = []
+    for child in bone.children:
+        copied_children.append(copy_bones(child))
+    copied_bone = Bone(bone.name, bone.inverse_bind_matrix, bone.rest_transform, copied_children, bone.local_transform, bone.rotations, bone.translations, bone.scales, bone.index);
+    return copied_bone
 
 class Model:
     """
     Represents a 3D model.
     """
+    
+
     def __init__(self, app, mesh_name: str) -> None:
         """
         Constructor.
         :param app: Glw app.
         :param mesh_name: Name of the model's mesh.
         """
+
         self.current_animation = None
         self.animation_length = None
         self.current_animation_id = None
         meshes = Mesh.instance()
         self.app = app
         self.commands = meshes.data[mesh_name][0]
-        self.animations = meshes.data[mesh_name][1]
+        self.animations = []
+        for animation in meshes.data[mesh_name][1]:
+            self.animations.append(Animation(animation.name, animation.duration, copy_bones(animation.root_bone), animation.root_transform))
+
         self.set_animation_id(0)
 
         # Check if the skeleton is properly connected
@@ -34,7 +48,7 @@ class Model:
                 raise ValueError("The root bone of the skeleton is not set.")
         else:
             raise ValueError("No animation data is available.")
-
+        
         self.translation = Vector3()
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])

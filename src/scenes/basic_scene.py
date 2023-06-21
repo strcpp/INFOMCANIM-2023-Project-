@@ -14,7 +14,6 @@ class BasicScene(Scene):
     """
     Implements the scene of the application.
     """
-    show_model_selection = False
     show_skeleton = True
     show_model = True
     thickness_value = 1
