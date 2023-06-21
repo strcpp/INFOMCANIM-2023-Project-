@@ -37,6 +37,9 @@ class Bone:
     """
     Implements each bone of the model.
     """
+
+    # Static variables that are shared for each Bone instance. This way we don't re-calculate them for each bone, but
+    # only for the parent one.
     timestamp_norm = 0
     index = 0
     indices = None
@@ -68,7 +71,7 @@ class Bone:
         :param index: Index of the bone in the list of joints.
         """
         self.name = name
-        self.local_transform = local_transform if local_transform is not None else rest_transform
+        self.local_transform = local_transform if local_transform else rest_transform
         self.rest_transform = rest_transform
         self.inverse_bind_matrix = inverse_bind_matrix
         self.children = children
@@ -89,6 +92,7 @@ class Bone:
         :param is_parent: Is True if the current Bone is the parent Bone.
         """
         if self.scales is not None and self.rotations is not None and self.translations is not None:
+            # Precalculating static variables for the parent bone so that we don't re-calculate them for each child bone
             if is_parent:
                 Bone.index = binary_search_keyframe(timestamp,
                                                     np.array([keyframe.timestamp for keyframe in self.translations]))
