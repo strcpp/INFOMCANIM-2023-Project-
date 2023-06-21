@@ -4,7 +4,7 @@ from render.shaders import Shaders
 import moderngl
 from typing import List, Tuple
 
-MAX_LINE_BUFFER_SIZE = 2400
+MAX_LINE_BUFFER_SIZE = 5000
 
 
 def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.ndarray]:
