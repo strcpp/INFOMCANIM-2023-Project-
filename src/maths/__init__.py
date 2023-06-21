@@ -1,10 +1,12 @@
 import math
+import sys
 
 import numpy as np
 from numba import njit
 from typing import Tuple
 
 eps = 1e-8
+MAX_FLOAT = sys.float_info.max
 
 
 @njit(cache=True)
@@ -70,7 +72,7 @@ def normalize(v: np.ndarray) -> np.ndarray:
 
 
 @njit(cache=True)
-def clip(x: np.float32, min_val: np.float32, max_val: np.float32) -> float:
+def clip(x: float, min_val: float, max_val: float) -> float:
     """
     Clips a number.
     :param x: Input number.
@@ -95,11 +97,11 @@ def slerp(quat1: np.ndarray, quat2: np.ndarray, timestamp: float, timestamp_1: f
     :return: Interpolated quaternion.
     """
 
-    if(timestamp_2 ==  timestamp_1):
+    if timestamp_2 == timestamp_1:
         slerp_amount = 0
     else:
         slerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
-    t = clip(np.float32(slerp_amount), np.float32(0.0), np.float32(1.0))
+    t = clip(slerp_amount, 0.0, 1.0)
 
     dot = 0.0
     for i in range(len(quat1)):
@@ -132,11 +134,11 @@ def lerp(vector_1: np.ndarray, vector_2: np.ndarray, timestamp: float, timestamp
     :return: Interpolated vector.
     """
 
-    if(timestamp_1 == timestamp_2):
-        lerp_amount = 0.0
+    if timestamp_1 == timestamp_2:
+        lerp_amount = 0
     else:
         lerp_amount = (timestamp - timestamp_1) / (timestamp_2 - timestamp_1)
-        lerp_amount = clip(np.float32(lerp_amount), np.float32(0.0), np.float32(1.0))
+        lerp_amount = clip(lerp_amount, 0.0, 1.0)
 
     return vector_1 * (1 - lerp_amount) + vector_2 * lerp_amount
 
@@ -189,14 +191,13 @@ def quat_log(quat: np.ndarray) -> np.ndarray:
 
     if length < eps:
         return np.array([quat[1], quat[2], quat[3]])
-    else:
-        if quat[0] < -1:
-            quat[0] = -1
-        elif quat[0] > 1:
-            quat[0] = 1
+    if quat[0] < -1:
+        quat[0] = -1
+    elif quat[0] > 1:
+        quat[0] = 1
 
-        angle = np.arccos(quat[0])
-        return angle * np.array([quat[1], quat[2], quat[3]]) / length
+    angle = np.arccos(quat[0])
+    return angle * np.array([quat[1], quat[2], quat[3]]) / length
 
 
 @njit(cache=True)
@@ -209,10 +210,9 @@ def quat_exp(vec3: np.ndarray) -> np.ndarray:
     angle = np.sqrt(vec3[0] ** 2 + vec3[1] ** 2 + vec3[2] ** 2)
     if angle < eps:
         return quat_norm(np.array([1, vec3[0], vec3[1], vec3[2]]))
-    else:
-        c = np.cos(angle)
-        s = np.sin(angle) / angle
-        return np.array([c, vec3[0] * s, vec3[1] * s, vec3[2] * s])
+    c = np.cos(angle)
+    s = np.sin(angle) / angle
+    return np.array([c, vec3[0] * s, vec3[1] * s, vec3[2] * s])
 
 
 @njit(cache=True)
@@ -320,9 +320,7 @@ def calculate_translation_tangent(p0: np.ndarray, p1: np.ndarray, t0: float, t1:
     :param t1: Timestamp of the second translation.
     :return: Tangent between the 2 vectors.
     """
-    if t1 - t0 <= 1:
-        return p1 - p0
-    return (p1 - p0) / (t1 - t0)
+    return (p1 - p0) / clip((t1 - t0), 1.0, MAX_FLOAT)
 
 
 @njit(cache=True)
@@ -337,9 +335,7 @@ def calculate_rotation_tangent(r0: np.ndarray, r1: np.ndarray, t0: float, t1: fl
     """
     r1_sub_r0 = quat_to_scaled_angle_axis(quat_abs(quat_mult(r1, quat_inv(r0))))
 
-    if t1 - t0 <= 1:
-        return r1_sub_r0
-    return r1_sub_r0 / (t1 - t0)
+    return r1_sub_r0 / clip((t1 - t0), 1.0, MAX_FLOAT)
 
 
 @njit(cache=True)
@@ -354,6 +350,4 @@ def calculate_scale_tangent(s0: np.ndarray, s1: np.ndarray, t0: np.ndarray, t1: 
     """
     s1_sub_s0 = np.log(s1 / s0)
 
-    if t1 - t0 <= 1:
-        return s1_sub_s0
-    return s1_sub_s0 / (t1 - t0)
+    return s1_sub_s0 / clip((t1 - t0), 1.0, MAX_FLOAT)

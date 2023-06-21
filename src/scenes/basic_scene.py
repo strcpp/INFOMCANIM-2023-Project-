@@ -128,7 +128,7 @@ class BasicScene(Scene):
 
         # Add an ImGui window
         imgui.begin("Settings", flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE)
-        
+
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
 
@@ -210,7 +210,6 @@ class BasicScene(Scene):
             default_button_color = (0.694, 0.282, 0.282, 1.0)
             active_button_color = (0.282, 0.361, 0.306, 1.0)
 
-            
             imgui.same_line()  # Add this line to align the buttons in a row
 
             # Forward button
@@ -270,7 +269,6 @@ class BasicScene(Scene):
         imgui.render()
 
         self.app.imgui.render(imgui.get_draw_data())
-
 
     def render(self) -> None:
         """

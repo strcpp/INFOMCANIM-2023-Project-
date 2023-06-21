@@ -93,9 +93,6 @@ class GLTFLoader(Loader):
                 joint_indices = np.full((indices.shape[0], 4), -1, dtype='i4') if None else joint_indices
                 joint_weights = np.full((indices.shape[0], 4), 0, dtype='f4') if None else joint_weights
 
-                # print(positions.shape, joint_indices.shape, joint_weights.shape)
-                # print(joint_weights)
-
                 vertex_data = np.hstack((positions, normals, texcoords, joint_weights))
 
                 vbo = self.app.ctx.buffer(vertex_data.astype('f4'))
