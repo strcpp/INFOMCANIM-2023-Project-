@@ -10,6 +10,7 @@ from animation.bone import Bone
 import numpy as np
 from typing import List, Optional, Tuple
 import pygame
+import os
 
 
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
@@ -58,11 +59,16 @@ class BasicScene(Scene):
     grid = None
     forward = True
     current_playback_position = 0
-
+    tracks = ["Track 1", "Track 2"]
+    sounds = dict()
+    selected_track = tracks[0]
+    
     def load(self) -> None:
         """
         Load method.
         """
+        pygame.init()  # Initialize Pygame video module
+
         self.models = ['Batman', 'Joker']
 
         for model in self.models:
@@ -90,15 +96,22 @@ class BasicScene(Scene):
 
         # Load and play the MP3 file
         pygame.mixer.init()
-        pygame.mixer.music.load("resources/soundtrack.mp3")
-        pygame.mixer.music.play(-1)  # -1 indicates infinite looping
+
+        for track in self.tracks:
+            path = os.path.join("resources/tracks", track + ".mp3")
+            self.sounds[track] = pygame.mixer.Sound(path)
+        
+        pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops = -1)
+
+        # Set the end event for the music
+        pygame.mixer.music.set_endevent(pygame.constants.USEREVENT)
 
     def unload(self) -> None:
         """
         Unload method.
         """
         self.entities.clear()
-        self.current_playback_position = pygame.mixer.music.get_pos()  # Store the current playback position
+        self.current_playback_position = pygame.mixer.music.get_pos() # Store the current playback position
         pygame.mixer.music.stop()
 
     def update(self, dt: float) -> None:
@@ -274,7 +287,7 @@ class BasicScene(Scene):
                 self.interpolation_method = "hermite"
             imgui.pop_style_color()
 
-         # Add a collapsible header for Soundtrack Settings
+        # Add a collapsible header for Soundtrack Settings
         if imgui.tree_node("Soundtrack Settings"):
             # Add a slider for volume
             volume_min = 0.0
@@ -282,8 +295,8 @@ class BasicScene(Scene):
             _, volume = imgui.slider_float("Volume", pygame.mixer.music.get_volume(), volume_min, volume_max)
             pygame.mixer.music.set_volume(volume)
 
-            # Get the current state of the music player
-            is_playing = pygame.mixer.music.get_busy()
+            # Get the current state of the music player for the selected track
+            is_playing = pygame.mixer.Channel(0).get_busy()
 
             # Determine the label and color for the play/stop button
             if is_playing:
@@ -296,20 +309,24 @@ class BasicScene(Scene):
             # Set the button color
             imgui.push_style_color(imgui.COLOR_BUTTON, *play_stop_button_color)
 
-            # Display the play/stop button
-            if imgui.button(play_stop_button_label):
+            # Display the play/stop button for the current track
+            if imgui.button(play_stop_button_label + " " + self.selected_track):
                 if is_playing:
-                    pygame.mixer.music.pause()
-                    self.current_playback_position = pygame.mixer.music.get_pos()  # Store the current playback position
+                    pygame.mixer.Channel(0).stop()
+                    self.current_playback_position = 0  # Reset the playback position
                 else:
-                    if self.current_playback_position > 0:
-                        pygame.mixer.music.unpause()  # Resume from the stored playback position
-                    else:
-                        pygame.mixer.music.play(-1)  # Start from the beginning
+                    pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops=-1)
 
             imgui.pop_style_color()
 
+            # Add a dropdown menu for track selection
+            _, selected_index = imgui.combo("Track", self.tracks.index(self.selected_track), self.tracks)
+            if selected_index != -1 and self.selected_track != self.tracks[selected_index]:
+                self.selected_track = self.tracks[selected_index]
+                pygame.mixer.Channel(0).play(self.sounds[self.selected_track])
+
             imgui.tree_pop()
+
 
         imgui.end()
         imgui.render()
