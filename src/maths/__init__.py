@@ -191,10 +191,7 @@ def quat_log(quat: np.ndarray) -> np.ndarray:
 
     if length < eps:
         return np.array([quat[1], quat[2], quat[3]])
-    if quat[0] < -1:
-        quat[0] = -1
-    elif quat[0] > 1:
-        quat[0] = 1
+    quat[0] = clip(quat[0], -1, 1)
 
     angle = np.arccos(quat[0])
     return angle * np.array([quat[1], quat[2], quat[3]]) / length
