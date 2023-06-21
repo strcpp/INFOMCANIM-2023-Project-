@@ -70,7 +70,7 @@ class BasicScene(Scene):
 
         self.bones = self.find(self.current_model).get_root_bone()
 
-        self.lines = Lines(self.app, lineWidth=1)
+        self.lines = Lines(self.app, line_width=1)
         self.light = Light(
             position=Vector3([5., 5., 5.], dtype='f4'),
             color=Vector3([1.0, 1.0, 1.0], dtype='f4')
