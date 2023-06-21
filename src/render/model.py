@@ -39,14 +39,25 @@ class Model:
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])
 
-    def set_pose(self, timestamp: float, interpolation_method: str, n_keyframes: int) -> None:
-        """
-        Sets the pose of the model.
-        :param timestamp: Current timestamp.
-        :param interpolation_method: Interpolation method ('linear' or 'hermite').
-        :param n_keyframes: Number of equidistant Keyframes to use for the interpolation.
-        """
-        self.current_animation.set_pose(timestamp, interpolation_method, n_keyframes)
+        self.timestamp = 0
+        self.animation_speed = 1
+        self.show_model = True
+        self.show_skeleton = True
+
+
+    def update(self, dt: float, interpolation_method: str):
+        self.timestamp += dt * self.animation_speed
+        # Check if the animation reached the end
+        if self.timestamp >= self.animation_length:
+            self.timestamp = 0.0
+        # Check if the animation reached the beginning
+        elif self.timestamp < 0:
+            self.timestamp = self.animation_length
+
+        self.current_animation.set_pose(self.timestamp, interpolation_method, self.get_number_of_keyframes())
+
+    def set_animation_speed(self, speed: float):
+        self.animation_speed = speed
 
     def set_animation_id(self, animation_id: int) -> None:
         """

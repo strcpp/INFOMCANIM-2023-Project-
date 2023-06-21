@@ -28,8 +28,10 @@ class Scene:
         self.current_animation_names = None
         self.current_model_entity = None
         self.current_model = None
+        self.model_names_in_scene = []
         self.app = app
         self.entities = []
+        self.model_counter = 0
 
     def add_entity(self, name: str, model: Model) -> None:
         """
@@ -38,6 +40,14 @@ class Scene:
         :param model: The model associated with the entity.
         """
         self.entities.append(Entity(name, model))
+
+    def add_model(self, name: str) -> str: 
+        self.model_counter += 1
+        unique_name = name #f'{str(self.model_counter)} - {name}'
+        self.add_entity(unique_name, Model(self.app, unique_name))
+        self.model_names_in_scene.append(unique_name)
+
+        return unique_name
 
     def find(self, name: str) -> Model:
         """
@@ -58,6 +68,8 @@ class Scene:
         self.current_model = model_name
         self.current_model_entity = self.find(self.current_model)
         self.current_animation_names = list(map(lambda a: a.name, self.current_model_entity.animations))
+
+
 
     @abstractmethod
     def load(self) -> None:

@@ -2,7 +2,7 @@ import moderngl_window as glw
 import moderngl as gl
 from render.shaders import Shaders
 from render.mesh import Mesh
-from scenes.basic_scene import BasicScene
+from scenes.multiple_models_scene import MultipleModelsScene
 import pathlib
 import numpy as np
 from loaders.GltfLoader import GLTFLoader
@@ -51,7 +51,7 @@ class App(glw.WindowConfig):
 
         self.fps_dims = (10, self.window_size[1] - 10)
 
-        self.scene = BasicScene(self)
+        self.scene = MultipleModelsScene(self)
         self.scene.load()
 
     def render(self, time: float, frame_time: float) -> None:
