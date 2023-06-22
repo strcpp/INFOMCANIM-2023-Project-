@@ -89,7 +89,7 @@ class MultipleModelsScene(Scene):
 
         # Add an ImGui window
         imgui.set_next_window_position(0,20)
-        imgui.set_next_window_size(400, 0)
+        imgui.set_next_window_size(370, 0)
         imgui.begin("Settings", flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE)
         
         imgui.text("Click and drag left/right mouse button to rotate camera.")
