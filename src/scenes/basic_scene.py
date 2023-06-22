@@ -9,6 +9,8 @@ import imgui
 from animation.bone import Bone
 import numpy as np
 from typing import List, Optional, Tuple
+import pygame
+import os
 
 
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
@@ -55,11 +57,19 @@ class BasicScene(Scene):
     skybox = None
     timestamp = 0
     grid = None
-
+    forward = True
+    current_playback_position = 0
+    tracks = ["Track 1", "Track 2", "Track 3"]
+    sounds = dict()
+    selected_track = tracks[0]
+    overall_volume = 1
+    
     def load(self) -> None:
         """
         Load method.
         """
+        pygame.init()  # Initialize Pygame video module
+
         self.models = ['Batman', 'Joker']
 
         for model in self.models:
@@ -69,7 +79,7 @@ class BasicScene(Scene):
 
         self.bones = self.find(self.current_model).get_root_bone()
 
-        self.lines = Lines(self.app, lineWidth=1)
+        self.lines = Lines(self.app, line_width=1)
         self.light = Light(
             position=Vector3([5., 5., 5.], dtype='f4'),
             color=Vector3([1.0, 1.0, 1.0], dtype='f4')
@@ -83,12 +93,25 @@ class BasicScene(Scene):
 
         self.n_keyframes = self.find(self.current_model).get_number_of_keyframes()
         self.max_keyframes = self.n_keyframes
+        self.forward = True
+
+        # Load and play the MP3 file
+        pygame.mixer.init()
+        
+        for track in self.tracks:
+            path = os.path.join("resources/tracks", track + ".mp3")
+            self.sounds[track] = pygame.mixer.Sound(path)
+        
+        pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops = -1)
 
     def unload(self) -> None:
         """
         Unload method.
         """
         self.entities.clear()
+        self.current_playback_position = pygame.mixer.music.get_pos()  # Store the current playback position
+        pygame.mixer.Channel(0).stop()
+
 
     def update(self, dt: float) -> None:
         """
@@ -97,14 +120,14 @@ class BasicScene(Scene):
         """
         animation_length = self.current_model_entity.animation_length
 
-        if self.animation_speed > 0:  # Forward animation
+        if self.forward:  # Forward animation
             self.timestamp += dt * self.animation_speed
 
             # Check if the animation reached the end
             if self.timestamp >= animation_length:
                 self.timestamp = 0.0
 
-        elif self.animation_speed < 0:  # Backward animation
+        else:  # Backward animation
             self.timestamp -= dt * abs(self.animation_speed)
 
             # Check if the animation reached the beginning
@@ -126,7 +149,7 @@ class BasicScene(Scene):
 
         # Add an ImGui window
         imgui.begin("Settings", flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE)
-        
+
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
 
@@ -150,6 +173,7 @@ class BasicScene(Scene):
             self.thickness_value = self.lines.lineWidth
 
             _, self.show_skeleton = imgui.checkbox("Skeleton", self.show_skeleton)
+            imgui.same_line()
             _, self.show_model = imgui.checkbox("Model", self.show_model)
             imgui.tree_pop()
 
@@ -208,37 +232,33 @@ class BasicScene(Scene):
             default_button_color = (0.694, 0.282, 0.282, 1.0)
             active_button_color = (0.282, 0.361, 0.306, 1.0)
 
-            
             imgui.same_line()  # Add this line to align the buttons in a row
 
             # Forward button
-            if self.animation_speed != 1:
+            if not self.forward:
                 forward_button_color = default_button_color
             else:
                 forward_button_color = active_button_color
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *forward_button_color)
             if imgui.button("Forward"):
-                if self.animation_speed != 1:
-                    self.animation_speed = 1
-                else:
-                    self.animation_speed = self.previous_animation_speed
+                self.forward = True
+                self.animation_speed = self.previous_animation_speed
             imgui.pop_style_color()
 
             imgui.same_line()  # Add this line to align the buttons in a row
 
             # Backward button
-            if self.animation_speed != -1:
+            if self.forward:
                 backward_button_color = default_button_color
             else:
                 backward_button_color = active_button_color
 
             imgui.push_style_color(imgui.COLOR_BUTTON, *backward_button_color)
             if imgui.button("Backward"):
-                if self.animation_speed != -1:
-                    self.animation_speed = -1
-                else:
-                    self.animation_speed = self.previous_animation_speed
+                self.forward = False
+                self.animation_speed = self.previous_animation_speed
+
             imgui.pop_style_color()
 
             imgui.same_line()  # Add this line to align the buttons in a row
@@ -267,11 +287,56 @@ class BasicScene(Scene):
                 self.interpolation_method = "hermite"
             imgui.pop_style_color()
 
+        # Add a collapsible header for Soundtrack Settings
+        if imgui.tree_node("Soundtrack Settings"):
+            # Add a slider for volume
+            volume_min = 0.0
+            volume_max = 1.0
+            
+            _, self.overall_volume = imgui.slider_float("Volume", self.overall_volume, volume_min, volume_max)
+
+            # Set the volume for all tracks
+            for track in self.tracks:
+                pygame.mixer.Channel(self.tracks.index(track)).set_volume(self.overall_volume)
+
+             # Add a dropdown menu for track selection
+            _, selected_index = imgui.combo("Track", self.tracks.index(self.selected_track), self.tracks)
+            if selected_index != -1 and self.selected_track != self.tracks[selected_index]:
+                self.selected_track = self.tracks[selected_index]
+                pygame.mixer.Channel(0).play(self.sounds[self.selected_track])
+
+            imgui.tree_pop()
+
+            imgui.same_line()
+
+            # Get the current state of the music player for the selected track
+            is_playing = pygame.mixer.Channel(0).get_busy()
+
+            # Determine the label and color for the play/stop button
+            if is_playing:
+                play_stop_button_label = "Stop"
+                play_stop_button_color = (0.694, 0.282, 0.282, 1.0)  # Red color for Stop button
+            else:
+                play_stop_button_label = "Play"
+                play_stop_button_color = (0.282, 0.361, 0.306, 1.0)  # Green color for Play button
+
+            # Set the button color
+            imgui.push_style_color(imgui.COLOR_BUTTON, *play_stop_button_color)
+
+            # Display the play/stop button for the current track
+            if imgui.button(play_stop_button_label):
+                if is_playing:
+                    pygame.mixer.Channel(0).stop()
+                    self.current_playback_position = 0  # Reset the playback position
+                else:
+                    pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops=-1)
+
+            imgui.pop_style_color()
+
         imgui.end()
         imgui.render()
 
         self.app.imgui.render(imgui.get_draw_data())
-
 
     def render(self) -> None:
         """

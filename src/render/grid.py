@@ -49,7 +49,7 @@ class Grid:
 
         return np.array(model, dtype='f4')
 
-    def draw(self, proj_matrix: Matrix44, camera, _) -> None:
+    def draw(self, proj_matrix: Matrix44, camera) -> None:
         """
         Draws a grid plane.
         :param proj_matrix: Projection matrix.

@@ -8,7 +8,9 @@ from light import Light
 import imgui
 from animation.bone import Bone
 from animation.get_bone_connections import get_bone_connections
+import pygame
 import numpy as np
+import os
 
 class MultipleModelsScene(Scene):
     """
@@ -24,8 +26,12 @@ class MultipleModelsScene(Scene):
     lines = None
     light = None
     skybox = None
-    timestamp = 0
     grid = None
+    current_playback_position = 0
+    tracks = ["Track 1", "Track 2", "Track 3"]
+    sounds = dict()
+    selected_track = tracks[0]
+    overall_volume = 1
 
     current_model_to_add = 0
 
@@ -35,7 +41,7 @@ class MultipleModelsScene(Scene):
         """
         self.model_names = ['Batman', 'Joker']
 
-        self.lines = Lines(self.app, lineWidth=1)
+        self.lines = Lines(self.app)
         self.light = Light(
             position=Vector3([5., 5., 5.], dtype='f4'),
             color=Vector3([1.0, 1.0, 1.0], dtype='f4')
@@ -45,13 +51,22 @@ class MultipleModelsScene(Scene):
 
         self.grid = Grid(self.app, color=[0.9, 0.9, 0.9], size=500)
 
-        self.timestamp = 0
+        # Load and play the MP3 file
+        pygame.init()
+        pygame.mixer.init()
+        for track in self.tracks:
+            path = os.path.join("resources/tracks", track + ".mp3")
+            self.sounds[track] = pygame.mixer.Sound(path)
+    
+        # pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops = -1)
 
     def unload(self) -> None:
         """
         Unload method.
         """
         self.entities.clear()
+        self.current_playback_position = pygame.mixer.music.get_pos() # Store the current playback position
+        pygame.mixer.Channel(0).stop()
 
     def update(self, dt: float) -> None:
         """
@@ -73,18 +88,26 @@ class MultipleModelsScene(Scene):
         imgui.style_colors_classic()
 
         # Add an ImGui window
+        imgui.set_next_window_position(0,20)
+        imgui.set_next_window_size(400, 0)
         imgui.begin("Settings", flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE)
         
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
 
+        imgui.new_line()
+        imgui.text("Available models:")
         _, self.current_model_to_add = imgui.combo("##add_model_combo", self.current_model_to_add, self.model_names)
+        imgui.same_line()
         if imgui.button("Add Model"):
             model_name = self.add_model(self.model_names[self.current_model_to_add])
             self.set_model(model_name)
 
+        imgui.spacing()
+        imgui.spacing()
+        imgui.separator()
         # Add a collapsible header for Model Settings
-        # if imgui.tree_node("Model Selection") and len(self.model_names_in_scene) > 0:
+        imgui.text("Current models in scene:")
         models_in_scene = self.model_names_in_scene
         if len(self.model_names_in_scene) == 0:
             models_in_scene = [""]
@@ -93,24 +116,40 @@ class MultipleModelsScene(Scene):
             selected_model_name = self.model_names_in_scene[selected_model]
             if selected_model_name != self.current_model:
                 self.set_model(selected_model_name)
-        # imgui.tree_pop()
+                
 
-        # Add a collapsible header for Line Settings
-        if imgui.tree_node("Skeleton Settings"):
+        if (self.current_model_entity is not None):
+            imgui.same_line()
+            if imgui.button("Remove model"):
+                print(selected_model)
+                if selected_model > 0:
+                    self.set_model(self.model_names_in_scene[selected_model - 1])
+                elif selected_model < len(self.model_names_in_scene) - 1:
+                    self.set_model(self.model_names_in_scene[selected_model+ 1])
+                else:
+                    self.current_animation_names = None
+                    self.current_model_entity = None
+                    self.current_model = ""
+                del self.model_names_in_scene[selected_model]
+
+        if (self.current_model_entity is not None):
+            imgui.spacing()
+            imgui.indent(16)
+            # Add a collapsible header for Line Settings
+            imgui.text("Skeleton Settings:")
             # Add a slider for line thickness
             thickness_min = 1
             thickness_max = 15
             _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min,
-                                                         thickness_max)
+                                                            thickness_max)
             self.thickness_value = self.lines.lineWidth
 
             _, self.current_model_entity.show_skeleton = imgui.checkbox("Skeleton", self.current_model_entity.show_skeleton)
             _, self.current_model_entity.show_model = imgui.checkbox("Model", self.current_model_entity.show_model)
-            imgui.tree_pop()
 
-        # Add a collapsible header for Animation Settings
-        if imgui.tree_node("Animation Settings"):
-            imgui.text("Select an animation")
+            # Add a collapsible header for Animation Settings
+            imgui.spacing()
+            imgui.text("Animation Settings:")
             _, selected_animation = imgui.combo("##animation_combo", self.current_model_entity.current_animation_id,
                                                 self.current_animation_names)
             if selected_animation != -1 and selected_animation != self.current_model_entity.current_animation_id:
@@ -130,10 +169,10 @@ class MultipleModelsScene(Scene):
             imgui.pop_style_color()
 
             _, self.n_keyframes = imgui.slider_int("Keyframes to Use", self.n_keyframes, 2, self.max_keyframes)
-            imgui.tree_pop()
 
-        # Add a collapsible header for Playback Controls
-        if imgui.tree_node("Playback Controls"):
+            # Add a collapsible header for Playback Controls
+            imgui.spacing()
+            imgui.text("Playback Controls:")
             animation_length = self.current_model_entity.animation_length
             length_color = np.interp(self.current_model_entity.timestamp, [0, animation_length], [0, 1])
             red_2 = length_color
@@ -158,7 +197,6 @@ class MultipleModelsScene(Scene):
                 else:
                     self.current_model_entity.animation_speed = 0.0
             imgui.pop_style_color()
-            imgui.tree_pop()
 
             default_button_color = (0.694, 0.282, 0.282, 1.0)
             active_button_color = (0.282, 0.361, 0.306, 1.0)
@@ -194,8 +232,8 @@ class MultipleModelsScene(Scene):
 
             imgui.pop_style_color()
 
-            imgui.same_line()  # Add this line to align the buttons in a row
-
+            imgui.spacing()
+            imgui.text("Interpolation method:")
             # Linear button
             if self.interpolation_method != "linear":
                 linear_button_color = default_button_color
@@ -208,7 +246,6 @@ class MultipleModelsScene(Scene):
             imgui.pop_style_color()
 
             imgui.same_line()  # Add this line to align the buttons in a row
-
             # Hermite button
             if self.interpolation_method != "hermite":
                 hermite_button_color = default_button_color
@@ -219,6 +256,55 @@ class MultipleModelsScene(Scene):
             if imgui.button("Hermite"):
                 self.interpolation_method = "hermite"
             imgui.pop_style_color()
+
+            imgui.unindent(16)
+
+        # Add a collapsible header for Soundtrack Settings
+        imgui.spacing()
+        imgui.spacing()
+        imgui.separator()
+        imgui.text("Soundtrack Settings")
+        # Add a slider for volume
+        volume_min = 0.0
+        volume_max = 1.0
+        
+        _, self.overall_volume = imgui.slider_float("Volume", self.overall_volume, volume_min, volume_max)
+
+        # Set the volume for all tracks
+        for track in self.tracks:
+            pygame.mixer.Channel(self.tracks.index(track)).set_volume(self.overall_volume)
+
+        # Add a dropdown menu for track selection
+        _, selected_index = imgui.combo("Track", self.tracks.index(self.selected_track), self.tracks)
+        if selected_index != -1 and self.selected_track != self.tracks[selected_index]:
+            self.selected_track = self.tracks[selected_index]
+            pygame.mixer.Channel(0).play(self.sounds[self.selected_track])
+
+        imgui.same_line()
+
+        # Get the current state of the music player for the selected track
+        is_playing = pygame.mixer.Channel(0).get_busy()
+
+        # Determine the label and color for the play/stop button
+        if is_playing:
+            play_stop_button_label = "Stop"
+            play_stop_button_color = (0.694, 0.282, 0.282, 1.0)  # Red color for Stop button
+        else:
+            play_stop_button_label = "Play"
+            play_stop_button_color = (0.282, 0.361, 0.306, 1.0)  # Green color for Play button
+
+        # Set the button color
+        imgui.push_style_color(imgui.COLOR_BUTTON, *play_stop_button_color)
+
+        # Display the play/stop button for the current track
+        if imgui.button(play_stop_button_label):
+            if is_playing:
+                pygame.mixer.Channel(0).stop()
+                self.current_playback_position = 0  # Reset the playback position
+            else:
+                pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops=-1)
+
+        imgui.pop_style_color()
 
         imgui.end()
         imgui.render()
@@ -242,7 +328,7 @@ class MultipleModelsScene(Scene):
                 )
                 
 
-        self.grid.draw(self.app.camera.projection.matrix, self.app.camera, self.timestamp)
+        self.grid.draw(self.app.camera.projection.matrix, self.app.camera)
 
         self.render_ui()
 

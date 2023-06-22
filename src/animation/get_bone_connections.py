@@ -11,7 +11,7 @@ def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None)
     """
     bone_connections = []
 
-    if bone.rest_transform is not None:
+    if bone.local_transform is not None:
         bone_position = bone.local_transform[:-1, 3]
 
         if parent_position is not None:

@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 class Mesh:
     """
-    Reads all models/textures from the resources/models folder and creates corresponding GPU assets for them
+    Reads all models/textures from the resources/models folder and creates corresponding GPU assets for them.
     (vao, textures) which can then be loaded into a "model" instance using their folder names.
     """
     _instance = None

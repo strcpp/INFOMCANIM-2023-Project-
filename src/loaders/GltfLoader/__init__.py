@@ -12,7 +12,7 @@ from moderngl import VertexArray, Texture, Program
 
 class GLTFLoader(Loader):
     """
-    Helper class for loading gltf files
+    Helper class for loading gltf files.
     """
 
     def from_file(self, file_path: str) -> Tuple[List[Tuple[VertexArray, Texture, Program, None]], List[Animation]]:
@@ -92,9 +92,6 @@ class GLTFLoader(Loader):
 
                 joint_indices = np.full((indices.shape[0], 4), -1, dtype='i4') if None else joint_indices
                 joint_weights = np.full((indices.shape[0], 4), 0, dtype='f4') if None else joint_weights
-
-                # print(positions.shape, joint_indices.shape, joint_weights.shape)
-                # print(joint_weights)
 
                 vertex_data = np.hstack((positions, normals, texcoords, joint_weights))
 

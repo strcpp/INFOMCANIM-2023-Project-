@@ -16,7 +16,7 @@ class App(glw.WindowConfig):
     """
     Main glw App.
     """
-    title = "Computer anim. project"
+    title = "Computer Animation Project"
     gl_version = (3, 3)
     window_size = (1600, 800)
     aspect_ratio = None
