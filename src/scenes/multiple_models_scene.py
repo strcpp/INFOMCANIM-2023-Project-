@@ -121,7 +121,6 @@ class MultipleModelsScene(Scene):
         if (self.current_model_entity is not None):
             imgui.same_line()
             if imgui.button("Remove model"):
-                print(selected_model)
                 if selected_model > 0:
                     self.set_model(self.model_names_in_scene[selected_model - 1])
                 elif selected_model < len(self.model_names_in_scene) - 1:
