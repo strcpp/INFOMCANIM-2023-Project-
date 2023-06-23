@@ -29,7 +29,6 @@ class MultipleModelsScene(Scene):
     light = None
     skybox = None
     grid = None
-    current_playback_position = 0
     tracks = ["Track 1", "Track 2", "Track 3"]
     sounds = dict()
     selected_track = tracks[0]
@@ -56,7 +55,8 @@ class MultipleModelsScene(Scene):
         # Load and play the MP3 file
         pygame.init()
         pygame.mixer.init()
-
+        
+        #For Mac
         for track in self.tracks:
             path = os.path.join("resources/tracks", track + ".mp3")
             self.sounds[track] = pygame.mixer.Sound(path)
@@ -74,7 +74,6 @@ class MultipleModelsScene(Scene):
         Unload method.
         """
         self.entities.clear()
-        self.current_playback_position = pygame.mixer.music.get_pos()  # Store the current playback position
         pygame.mixer.Channel(0).stop()
 
     def update(self, dt: float) -> None:
@@ -308,7 +307,6 @@ class MultipleModelsScene(Scene):
         if imgui.button(play_stop_button_label):
             if is_playing:
                 pygame.mixer.Channel(0).stop()
-                self.current_playback_position = 0  # Reset the playback position
             else:
                 pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops=-1)
 
