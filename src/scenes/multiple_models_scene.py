@@ -56,12 +56,17 @@ class MultipleModelsScene(Scene):
         # Load and play the MP3 file
         pygame.init()
         pygame.mixer.init()
+
         for track in self.tracks:
-            if platform.system() == "Windows":
-                path = os.path.join("resources/tracks", track + ".mp3")
-            elif platform.system() == "Linux":
-                path = os.path.normpath(os.getcwd() + os.sep + os.pardir) + "/resources/tracks/" + track + ".mp3"
+            path = os.path.join("resources/tracks", track + ".mp3")
             self.sounds[track] = pygame.mixer.Sound(path)
+
+        # for track in self.tracks:
+        #     if platform.system() == "Windows":
+        #         path = os.path.join("resources/tracks", track + ".mp3")
+        #     elif platform.system() == "Linux":
+        #         path = os.path.normpath(os.getcwd() + os.sep + os.pardir) + "/resources/tracks/" + track + ".mp3"
+        #     self.sounds[track] = pygame.mixer.Sound(path)
         # pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops = -1)
 
     def unload(self) -> None:
