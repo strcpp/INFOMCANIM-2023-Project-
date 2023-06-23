@@ -11,11 +11,21 @@ MAX_FLOAT = sys.float_info.max
 
 @njit(cache=True)
 def from_translation(translation_vector: np.ndarray, translation: np.ndarray) -> None:
+    """
+    Converts a translation vector to a 4D matrix.
+    :param translation_vector: Translation vector.
+    :param translation: 4D identity matrix.
+    """
     translation[:3, 3] = translation_vector
 
 
 @njit(cache=True)
 def from_scale(scale_vector: np.ndarray, scale: np.ndarray) -> None:
+    """
+    Converts a scale vector to a 4D matrix.
+    :param scale_vector: scale vector.
+    :param scale: 4D identity matrix.
+    """
     scale[0, 0] = scale_vector[0]
     scale[1, 1] = scale_vector[1]
     scale[2, 2] = scale_vector[2]
@@ -25,6 +35,11 @@ def from_scale(scale_vector: np.ndarray, scale: np.ndarray) -> None:
 # /matrix33.py#L108
 @njit(cache=True)
 def from_quaternion(quat: np.ndarray, rotation: np.ndarray) -> None:
+    """
+    Converts a rotation quaternion to a 4D matrix.
+    :param quat: Rotation quaternion.
+    :param rotation: 4D identity matrix.
+    """
     norm = math.sqrt(quat[0] ** 2 + quat[1] ** 2 + quat[2] ** 2 + quat[3] ** 2)
     if norm != 0:
         qx, qy, qz, qw = quat[0] / norm, quat[1] / norm, quat[2] / norm, quat[3] / norm

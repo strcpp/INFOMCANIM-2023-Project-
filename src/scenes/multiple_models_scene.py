@@ -1,3 +1,5 @@
+import platform
+
 from render.model import Model
 from render.lines import Lines
 from render.grid import Grid
@@ -55,9 +57,11 @@ class MultipleModelsScene(Scene):
         pygame.init()
         pygame.mixer.init()
         for track in self.tracks:
-            path = os.path.join("resources/tracks", track + ".mp3")
+            if platform.system() == "Windows":
+                path = os.path.join("resources/tracks", track + ".mp3")
+            elif platform.system() == "Linux":
+                path = os.path.normpath(os.getcwd() + os.sep + os.pardir) + "/resources/tracks/" + track + ".mp3"
             self.sounds[track] = pygame.mixer.Sound(path)
-    
         # pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops = -1)
 
     def unload(self) -> None:
@@ -65,7 +69,7 @@ class MultipleModelsScene(Scene):
         Unload method.
         """
         self.entities.clear()
-        self.current_playback_position = pygame.mixer.music.get_pos() # Store the current playback position
+        self.current_playback_position = pygame.mixer.music.get_pos()  # Store the current playback position
         pygame.mixer.Channel(0).stop()
 
     def update(self, dt: float) -> None:
