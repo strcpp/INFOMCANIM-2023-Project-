@@ -1,6 +1,3 @@
-import platform
-
-from render.model import Model
 from render.lines import Lines
 from render.grid import Grid
 from render.skybox import Skybox
@@ -8,11 +5,11 @@ from scenes.scene import Scene
 from pyrr import Vector3
 from light import Light
 import imgui
-from animation.bone import Bone
 from animation.get_bone_connections import get_bone_connections
 import pygame
 import numpy as np
 import os
+
 
 class MultipleModelsScene(Scene):
     """
@@ -33,6 +30,10 @@ class MultipleModelsScene(Scene):
     sounds = dict()
     selected_track = tracks[0]
     overall_volume = 1
+    model_names = []
+    current_animation_names = None
+    current_model_entity = None
+    current_model = ""
 
     current_model_to_add = 0
 
@@ -55,19 +56,10 @@ class MultipleModelsScene(Scene):
         # Load and play the MP3 file
         pygame.init()
         pygame.mixer.init()
-        
-        #For Mac
+
         for track in self.tracks:
             path = os.path.join("resources/tracks", track + ".mp3")
             self.sounds[track] = pygame.mixer.Sound(path)
-
-        # for track in self.tracks:
-        #     if platform.system() == "Windows":
-        #         path = os.path.join("resources/tracks", track + ".mp3")
-        #     elif platform.system() == "Linux":
-        #         path = os.path.normpath(os.getcwd() + os.sep + os.pardir) + "/resources/tracks/" + track + ".mp3"
-        #     self.sounds[track] = pygame.mixer.Sound(path)
-        # pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops = -1)
 
     def unload(self) -> None:
         """
@@ -82,7 +74,6 @@ class MultipleModelsScene(Scene):
         :param dt: Update time step.
         """
         for idx, model_name in enumerate(self.model_names_in_scene):
-            
             model = self.find(model_name)
             model.update(dt, self.interpolation_method)
 
@@ -96,10 +87,10 @@ class MultipleModelsScene(Scene):
         imgui.style_colors_classic()
 
         # Add an ImGui window
-        imgui.set_next_window_position(0,20)
+        imgui.set_next_window_position(0, 20)
         imgui.set_next_window_size(370, 0)
         imgui.begin("Settings", flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE)
-        
+
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
 
@@ -119,27 +110,27 @@ class MultipleModelsScene(Scene):
         models_in_scene = self.model_names_in_scene
         if len(self.model_names_in_scene) == 0:
             models_in_scene = [""]
-        _, selected_model = imgui.combo('##select_model_combo', models_in_scene.index(self.current_model), models_in_scene)
+        _, selected_model = imgui.combo('##select_model_combo', models_in_scene.index(self.current_model),
+                                        models_in_scene)
         if selected_model != -1 and len(self.model_names_in_scene) > 0:
             selected_model_name = self.model_names_in_scene[selected_model]
             if selected_model_name != self.current_model:
                 self.set_model(selected_model_name)
-                
 
-        if (self.current_model_entity is not None):
+        if self.current_model_entity is not None:
             imgui.same_line()
             if imgui.button("Remove model"):
                 if selected_model > 0:
                     self.set_model(self.model_names_in_scene[selected_model - 1])
                 elif selected_model < len(self.model_names_in_scene) - 1:
-                    self.set_model(self.model_names_in_scene[selected_model+ 1])
+                    self.set_model(self.model_names_in_scene[selected_model + 1])
                 else:
                     self.current_animation_names = None
                     self.current_model_entity = None
                     self.current_model = ""
                 del self.model_names_in_scene[selected_model]
 
-        if (self.current_model_entity is not None):
+        if self.current_model_entity is not None:
             imgui.spacing()
             imgui.indent(16)
             # Add a collapsible header for Line Settings
@@ -148,10 +139,11 @@ class MultipleModelsScene(Scene):
             thickness_min = 1
             thickness_max = 15
             _, self.lines.lineWidth = imgui.slider_float("Line Thickness", self.thickness_value, thickness_min,
-                                                            thickness_max)
+                                                         thickness_max)
             self.thickness_value = self.lines.lineWidth
 
-            _, self.current_model_entity.show_skeleton = imgui.checkbox("Skeleton", self.current_model_entity.show_skeleton)
+            _, self.current_model_entity.show_skeleton = imgui.checkbox("Skeleton",
+                                                                        self.current_model_entity.show_skeleton)
             _, self.current_model_entity.show_model = imgui.checkbox("Model", self.current_model_entity.show_model)
 
             # Add a collapsible header for Animation Settings
@@ -172,10 +164,14 @@ class MultipleModelsScene(Scene):
             blue = 0.0
             slider_color = (red, green, blue, 1.0)  # Ranging from yellow to bright red
             imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, *slider_color)
-            _, self.current_model_entity.animation_speed = imgui.slider_float("Animation Speed", self.current_model_entity.animation_speed, min_speed, max_speed)
+            _, self.current_model_entity.animation_speed = imgui.slider_float("Animation Speed",
+                                                                              self.current_model_entity.animation_speed,
+                                                                              min_speed, max_speed)
             imgui.pop_style_color()
 
-            _, self.n_keyframes = imgui.slider_int("Keyframes to Use", self.n_keyframes, 2, self.max_keyframes)
+            _, self.current_model_entity.n_keyframes = imgui.slider_int("Keyframes to Use",
+                                                                        self.current_model_entity.n_keyframes, 2,
+                                                                        self.current_model_entity.max_keyframes)
 
             # Add a collapsible header for Playback Controls
             imgui.spacing()
@@ -187,7 +183,9 @@ class MultipleModelsScene(Scene):
             blue_2 = 1.0 - length_color
             slider_color = (red_2, green_2, blue_2, 1.0)  # Ranging from dark blue to bright orange
             imgui.push_style_color(imgui.COLOR_SLIDER_GRAB_ACTIVE, *slider_color)
-            _, self.current_model_entity.timestamp = imgui.slider_float("Animation Length", self.current_model_entity.timestamp, 0, animation_length)
+            _, self.current_model_entity.timestamp = imgui.slider_float("Animation Length",
+                                                                        self.current_model_entity.timestamp, 0,
+                                                                        animation_length)
             imgui.pop_style_color()
 
             if self.current_model_entity.animation_speed != 0:
@@ -208,7 +206,6 @@ class MultipleModelsScene(Scene):
             default_button_color = (0.694, 0.282, 0.282, 1.0)
             active_button_color = (0.282, 0.361, 0.306, 1.0)
 
-            
             imgui.same_line()  # Add this line to align the buttons in a row
 
             # Forward button
@@ -274,7 +271,7 @@ class MultipleModelsScene(Scene):
         # Add a slider for volume
         volume_min = 0.0
         volume_max = 1.0
-        
+
         _, self.overall_volume = imgui.slider_float("Volume", self.overall_volume, volume_min, volume_max)
 
         # Set the volume for all tracks
@@ -317,7 +314,6 @@ class MultipleModelsScene(Scene):
 
         self.app.imgui.render(imgui.get_draw_data())
 
-
     def render(self) -> None:
         """
         Renders all objects in the scene.
@@ -332,7 +328,6 @@ class MultipleModelsScene(Scene):
                     self.app.camera.matrix,
                     self.light
                 )
-                
 
         self.grid.draw(self.app.camera.projection.matrix, self.app.camera)
 

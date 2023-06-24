@@ -27,10 +27,12 @@ def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.
 
     return vertex_data, index_data
 
+
 class Lines:
     """
     Implements a model's skeleton as lines.
     """
+
     def __init__(self, app, line_width: int = 1, color=None, lines=None) -> None:
         """
         Constructor.
@@ -60,7 +62,7 @@ class Lines:
 
         self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position", index_buffer=self.ibo)
 
-        self.translation = Vector3([0,0,0])
+        self.translation = Vector3([0, 0, 0])
 
         self.rotation = Quaternion()
         self.scale = Vector3([1.0, 1.0, 1.0])

@@ -6,6 +6,7 @@ class Entity:
     """
     Represents an entity in the scene.
     """
+
     def __init__(self, name: str, model: Model):
         """
         Constructor.
@@ -20,6 +21,7 @@ class Scene:
     """
     Represents a scene in the application.
     """
+
     def __init__(self, app) -> None:
         """
         Constructor.
@@ -41,7 +43,7 @@ class Scene:
         """
         self.entities.append(Entity(name, model))
 
-    def add_model(self, name: str) -> str: 
+    def add_model(self, name: str) -> str:
         self.model_counter += 1
         unique_name = f'{str(self.model_counter)} - {name}'
         self.add_entity(unique_name, Model(self.app, name))
@@ -68,8 +70,6 @@ class Scene:
         self.current_model = model_name
         self.current_model_entity = self.find(self.current_model)
         self.current_animation_names = list(map(lambda a: a.name, self.current_model_entity.animations))
-
-
 
     @abstractmethod
     def load(self) -> None:
