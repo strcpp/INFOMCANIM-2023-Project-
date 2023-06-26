@@ -119,11 +119,13 @@ class MultipleModelsScene(Scene):
 
         # Add an ImGui window
         imgui.set_next_window_position(0, 20)
-        imgui.set_next_window_size(370, 0)
+        imgui.set_next_window_size(400, 0)
         imgui.begin("Settings", flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE)
 
         imgui.text("Click and drag left/right mouse button to rotate camera.")
         imgui.text("Click and drag middle mouse button to pan camera.")
+        imgui.text("Use WASD keys to move the currently selected model.")
+        imgui.text("Use QE keys to rotate the currently selected model.")
 
         imgui.new_line()
         imgui.text("Available models:")
