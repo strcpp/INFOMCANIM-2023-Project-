@@ -84,7 +84,7 @@ class Model:
         elif self.timestamp < 0:
             self.timestamp = self.animation_length
  
-        self.current_animation.set_pose(self.timestamp, interpolation_method, self.get_number_of_keyframes())
+        self.current_animation.set_pose(self.timestamp, interpolation_method, self.n_keyframes)
 
     def move(self, dx: float, dz: float):
         self.translation += Vector3([dx, 0, dz])

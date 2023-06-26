@@ -19,8 +19,6 @@ class MultipleModelsScene(Scene):
     animation_speed = 1
     default_speed = False
     interpolation_method = "linear"
-    n_keyframes = 2
-    max_keyframes = 2
     models = []
     lines = None
     light = None
@@ -48,7 +46,7 @@ class MultipleModelsScene(Scene):
         self.lines = Lines(self.app)
         self.light = Light(
             position=Vector3([5., 5., 5.], dtype='f4'),
-            color=Vector3([1.0, 1.0, 1.0], dtype='f4')
+            color=Vector3([7.0, 7.0, 7.0], dtype='f4')
         )
 
         self.skybox = Skybox(self.app, skybox='clouds', ext='png')
