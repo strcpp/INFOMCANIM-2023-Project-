@@ -34,7 +34,7 @@ class Animation:
     def get_sorted_joints(self):
         """
         Returns a sorted list of the skeleton's joints.
-        :return: Sorted lsit of skeleton joints.
+        :return: Sorted list of skeleton joints.
         """
         nodes = [(self.root_bone, self.root_transform)]
         joints = []
@@ -49,9 +49,9 @@ class Animation:
                 pair = (current_node.index, joint_matrix)
                 joints.append(pair)
 
-            nodes.extend(
-                [(child, joint_matrix) for child in current_node.children]
-            )
+                nodes.extend(
+                    [(child, joint_matrix) for child in current_node.children]
+                )
 
         joints = [x[1] for x in sorted(joints, key=lambda x: x[0])]
         return np.array(joints, dtype='f4')

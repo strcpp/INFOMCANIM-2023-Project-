@@ -2,6 +2,7 @@ from animation.bone import Bone
 from typing import List, Optional, Tuple
 from pyrr import Matrix44
 
+
 def get_bone_connections(bone: Bone, parent_position: Optional[Matrix44] = None) -> List[Tuple[Matrix44, Matrix44]]:
     """
     Gets a list of bones that are connected to a given bone.

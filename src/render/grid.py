@@ -54,7 +54,6 @@ class Grid:
         Draws a grid plane.
         :param proj_matrix: Projection matrix.
         :param camera: Application camera.
-        :param _: Unused parameter.
         """
         self.prog['model'].write(self.get_model_matrix())
         self.prog['view'].write(camera.matrix)

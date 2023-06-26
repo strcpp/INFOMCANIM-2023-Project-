@@ -27,10 +27,12 @@ def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.
 
     return vertex_data, index_data
 
+
 class Lines:
     """
     Implements a model's skeleton as lines.
     """
+
     def __init__(self, app, line_width: int = 1, color=None, lines=None) -> None:
         """
         Constructor.
