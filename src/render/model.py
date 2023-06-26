@@ -58,6 +58,11 @@ class Model:
         self.show_model = True
         self.show_skeleton = True
 
+        # self.translation = Matrix44.identity()
+        # self.rotation = Matrix44.identity()
+
+        self.model_transformation = Matrix44.identity()
+
 
     def update(self, dt: float, interpolation_method: str):
         self.timestamp += dt * self.animation_speed
@@ -67,11 +72,16 @@ class Model:
         # Check if the animation reached the beginning
         elif self.timestamp < 0:
             self.timestamp = self.animation_length
-
+ 
         self.current_animation.set_pose(self.timestamp, interpolation_method, self.get_number_of_keyframes())
 
-    def set_animation_speed(self, speed: float):
-        self.animation_speed = speed
+    def move(self, dx: float, dz: float):
+        self.translation += Vector3([dx, 0, dz])
+        self.calculate_model_matrix()
+
+    def rotate_y(self, d: float):
+        self.rotation = Quaternion.from_y_rotation(d) * self.rotation
+        self.calculate_model_matrix()
 
     def set_animation_id(self, animation_id: int) -> None:
         """
@@ -112,19 +122,21 @@ class Model:
             return self.current_animation.root_bone.get_number_of_keyframes()
         return 0
 
-    def get_model_matrix(self, transformation_matrix: Optional[Matrix44]) -> np.ndarray:
+    def calculate_model_matrix(self):
+        trans = Matrix44.from_translation(self.translation)
+        rot = Matrix44.from_quaternion(Quaternion(self.rotation))
+        scale = Matrix44.from_scale(self.scale)
+        self.model_transformation = trans * rot * scale
+
+    def get_model_matrix(self, transformation_matrix: Optional[Matrix44] = None) -> np.ndarray:
         """
         Returns the matrix of the model.
         :param transformation_matrix: Transformation matrix of the model.
         :return: Model matrix.
         """
-        trans = Matrix44.from_translation(self.translation)
-        rot = Matrix44.from_quaternion(Quaternion(self.rotation))
-        scale = Matrix44.from_scale(self.scale)
-        model = trans * rot * scale
-
+        model = self.model_transformation
         if transformation_matrix is not None:
-            model = model * transformation_matrix
+            model = self.model_transformation * transformation_matrix
 
         return np.array(model, dtype='f4')
 

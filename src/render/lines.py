@@ -60,11 +60,6 @@ class Lines:
 
         self.vao = self.app.ctx.simple_vertex_array(self.line_prog, self.vbo, "position", index_buffer=self.ibo)
 
-        self.translation = Vector3([0,0,0])
-
-        self.rotation = Quaternion()
-        self.scale = Vector3([1.0, 1.0, 1.0])
-
     def update(self, lines: List[Tuple[Matrix44, Matrix44]]) -> None:
         """
         Update method.
@@ -76,19 +71,7 @@ class Lines:
         self.vbo.write(vertices)
         self.ibo.write(indices)
 
-    def get_model_matrix(self) -> np.ndarray:
-        """
-        Returns the matrix of the model.
-        :return: Model matrix.
-        """
-        trans = Matrix44.from_translation(self.translation)
-        rot = Matrix44.from_quaternion(self.rotation)
-        scale = Matrix44.from_scale(self.scale)
-        model = trans * rot * scale
-
-        return np.array(model, dtype='f4')
-
-    def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44) -> None:
+    def draw(self, proj_matrix: Matrix44, view_matrix: Matrix44, model_matrix: np.array) -> None:
         """
         Draws the skeleton lines.
         :param proj_matrix: Projection matrix.
@@ -98,7 +81,7 @@ class Lines:
         self.line_prog["img_height"].value = self.app.window_size[1]
         self.line_prog["line_thickness"].value = self.lineWidth
 
-        self.line_prog['model'].write(self.get_model_matrix())
+        self.line_prog['model'].write(model_matrix)
         self.line_prog['view'].write(view_matrix)
         self.line_prog['projection'].write(proj_matrix)
         self.line_prog['color'].value = self.color

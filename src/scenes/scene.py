@@ -70,7 +70,6 @@ class Scene:
         self.current_animation_names = list(map(lambda a: a.name, self.current_model_entity.animations))
 
 
-
     @abstractmethod
     def load(self) -> None:
         """
@@ -97,5 +96,12 @@ class Scene:
     def render(self) -> None:
         """
         Abstract method for rendering the scene.
+        """
+        pass
+
+    @abstractmethod
+    def key_event(self, key: int, action: str):
+        """
+        Abstract method for key events.
         """
         pass

@@ -23,11 +23,11 @@ def binary_search_keyframe(timestamp: float, timestamps: np.ndarray) -> int:
     low = 0
     high = len(timestamps)
 
-    while low <= high:
+    while low < high:
         mid = (high + low) // 2
         if timestamp > timestamps[mid]:
             low = mid + 1
-        elif timestamp < timestamps[mid]:
+        elif timestamp <= timestamps[mid]:
             high = mid - 1
 
     return high

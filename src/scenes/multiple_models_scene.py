@@ -33,6 +33,7 @@ class MultipleModelsScene(Scene):
     sounds = dict()
     selected_track = tracks[0]
     overall_volume = 1
+    keys_pressed = []
 
     current_model_to_add = 0
 
@@ -86,6 +87,35 @@ class MultipleModelsScene(Scene):
             model = self.find(model_name)
             model.update(dt, self.interpolation_method)
 
+        move_speed = 0.05
+        rot_speed = 0.03
+
+        keys = self.app.wnd.keys
+        for key in self.keys_pressed:
+            if key == keys.W:
+                self.current_model_entity.move(0, move_speed)
+            elif key == keys.S:
+                self.current_model_entity.move(0, -move_speed)
+            elif key == keys.A:
+                self.current_model_entity.move(move_speed, 0)
+            elif key == keys.D:
+                self.current_model_entity.move(-move_speed, 0)
+            elif key == keys.Q:
+                self.current_model_entity.rotate_y(rot_speed)
+            elif key == keys.E:
+                self.current_model_entity.rotate_y(-rot_speed)
+
+    def key_event(self, key: int, action: str):
+        """ 
+        key event method. 
+        """
+        keys = self.app.wnd.keys
+        if self.current_model_entity != None:
+            if action == keys.ACTION_PRESS:
+                self.keys_pressed.append(key)
+            elif action == keys.ACTION_RELEASE:
+                self.keys_pressed.remove(key)
+        
     def render_ui(self) -> None:
         """
         Renders the UI.
@@ -266,6 +296,21 @@ class MultipleModelsScene(Scene):
 
             imgui.unindent(16)
 
+        imgui.spacing()
+        imgui.separator()
+        imgui.spacing()
+        imgui.push_style_color(imgui.COLOR_BUTTON, *(0.282, 0.361, 0.306, 1.0))
+        if imgui.button("Play all"):
+            for model_name in self.model_names_in_scene:
+                model = self.find(model_name)
+                model.animation_speed = 1
+        imgui.same_line()
+        if imgui.button("Stop all"):
+            for model_name in self.model_names_in_scene:
+                model = self.find(model_name)
+                model.animation_speed = 0
+        imgui.pop_style_color()
+
         # Add a collapsible header for Soundtrack Settings
         imgui.spacing()
         imgui.spacing()
@@ -343,4 +388,4 @@ class MultipleModelsScene(Scene):
             if model.show_skeleton:
                 bone_lines = get_bone_connections(model.get_root_bone())
                 self.lines.update(bone_lines)
-                self.lines.draw(self.app.camera.projection.matrix, self.app.camera.matrix)
+                self.lines.draw(self.app.camera.projection.matrix, self.app.camera.matrix, model.get_model_matrix())

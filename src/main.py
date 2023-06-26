@@ -74,6 +74,8 @@ class App(glw.WindowConfig):
 
         self.writer.draw(self.fps_dims, size=20)
 
+
+
     def key_event(self, key: int, action: str, modifiers: glw.context.base.keys.KeyModifiers) -> None:
         """
         Key even method.
@@ -85,6 +87,7 @@ class App(glw.WindowConfig):
         if action == keys.ACTION_PRESS and key == keys.ESCAPE:
             self.wnd.close()
         self.imgui.key_event(key, action, modifiers)
+        self.scene.key_event(key, action)
 
     def mouse_drag_event(self, x: int, y: int, dx: int, dy: int) -> None:
         """
