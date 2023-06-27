@@ -95,12 +95,14 @@ class MultipleModelsScene(Scene):
             elif key == keys.E:
                 self.current_model_entity.rotate_y(-rot_speed)
 
-    def key_event(self, key: int, action: str):
+    def key_event(self, key: int, action: str) -> None:
         """ 
-        key event method. 
+        key event method.
+        :param key: Key code or identifier associated with the key event.
+        :param action: Action performed on the key (e.g., "press", "release").
         """
         keys = self.app.wnd.keys
-        if self.current_model_entity != None:
+        if self.current_model_entity:
             if action == keys.ACTION_PRESS:
                 self.keys_pressed.append(key)
             elif action == keys.ACTION_RELEASE:
@@ -185,6 +187,8 @@ class MultipleModelsScene(Scene):
             if selected_animation != -1 and selected_animation != self.current_model_entity.current_animation_id:
                 self.current_model_entity.timestamp = 0
                 self.current_model_entity.set_animation_id(selected_animation)
+                self.current_model_entity.n_keyframes = self.current_model_entity.get_number_of_keyframes()
+                self.current_model_entity.max_keyframes = self.current_model_entity.get_number_of_keyframes()
 
             # Add a slider for animation speed
             min_speed = 0.0  # Set the minimum speed value to 0/ Animation stopped
@@ -385,4 +389,3 @@ class MultipleModelsScene(Scene):
                 bone_lines = get_bone_connections(model.get_root_bone())
                 self.lines.update(bone_lines)
                 self.lines.draw(self.app.camera.projection.matrix, self.app.camera.matrix, model.get_model_matrix())
-

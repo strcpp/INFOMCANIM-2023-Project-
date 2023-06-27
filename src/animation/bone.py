@@ -21,9 +21,9 @@ def binary_search_keyframe(timestamp: float, timestamps: np.ndarray) -> int:
     """
     # Find keyframes for given timestamp
     low = 0
-    high = len(timestamps)
+    high = len(timestamps) - 1
 
-    while low < high:
+    while low <= high:
         mid = (high + low) // 2
         if timestamp > timestamps[mid]:
             low = mid + 1

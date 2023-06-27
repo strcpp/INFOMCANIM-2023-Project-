@@ -74,8 +74,6 @@ class App(glw.WindowConfig):
 
         self.writer.draw(self.fps_dims, size=20)
 
-
-
     def key_event(self, key: int, action: str, modifiers: glw.context.base.keys.KeyModifiers) -> None:
         """
         Key even method.

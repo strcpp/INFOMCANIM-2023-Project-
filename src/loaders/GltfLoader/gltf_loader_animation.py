@@ -5,12 +5,14 @@ import numpy as np
 from pygltflib import *
 from loaders.GltfLoader.gltf_loader_helpers import *
 
+from typing import Dict, Set
 
-def build_rest_matrix(node):
+
+def build_rest_matrix(node: Node) -> Matrix44:
     """
-
-    :param node:
-    :return:
+    Builds the rest matrix for a given node.
+    :param node: Node to build the rest matrix for.
+    :return: Rest matrix.
     """
     matrix = Matrix44(np.identity(4, dtype=np.float32))
 
@@ -29,12 +31,12 @@ def build_rest_matrix(node):
     return matrix
 
 
-def get_inv_bind(gltf, skin):
+def get_inv_bind(gltf: GLTF2, skin: Skin) -> Dict[int, np.ndarray]:
     """
-
-    :param gltf:
-    :param skin:
-    :return:
+    Retrieves the inverse bind matrices for a given skin.
+    :param gltf: GLTF2 object.
+    :param skin: Skin to retrieve the inverse bind matrices for.
+    :return: Dictionary mapping joint indices to their corresponding inverse bind matrices.
     """
     inverse_bind_matrices_accessor = gltf.accessors[skin.inverseBindMatrices]
     inverse_bind_matrices = get_accessor_data(gltf, inverse_bind_matrices_accessor, 'f4')
@@ -43,20 +45,22 @@ def get_inv_bind(gltf, skin):
     return {joint: inverse_bind_matrix for joint, inverse_bind_matrix in zip(skin.joints, inverse_bind_matrices)}
 
 
-def find_root_node(gltf, skin):
+def find_root_node(gltf: GLTF2, skin: Skin) -> Tuple[Optional[int], Optional[Matrix44]]:
+    """
+    Finds the root node of a skin in a GLTF2 object.
+    :param gltf: GLTF2 object.
+    :param skin: Skin to retrieve the inverse bind matrices for.
+    :return: Tuple containing the root node ID and its accumulated transform if found, or (None, None) if not found.
     """
 
-    :param gltf:
-    :param skin:
-    :return:
-    """
-    def traverse_node_hierarchy(node_id, skin_joints, parent_transform=None):
+    def traverse_node_hierarchy(node_id: int, skin_joints: Set[int],
+                                parent_transform: Optional[Matrix44] = None) -> Tuple[Optional[int], Optional[Matrix44]]:
         """
-
-        :param node_id:
-        :param skin_joints:
-        :param parent_transform:
-        :return:
+        Recursively traverses the node hierarchy to find the root node.
+        :param node_id: Current node ID.
+        :param skin_joints: Set of skin joint IDs.
+        :param parent_transform: Parent node's accumulated transform.
+        :return: Tuple containing the root node ID and its accumulated transform if found, or (None, None) if not found.
         """
         node = gltf.nodes[node_id]
         local_transform = node.matrix if node.matrix is not None else build_rest_matrix(node)
@@ -85,22 +89,22 @@ def find_root_node(gltf, skin):
 
 def get_bones(gltf: GLTF2, skin: Skin) -> Tuple[Bone, Matrix44, Dict[str, Bone]]:
     """
-
-    :param gltf:
-    :param skin:
-    :return:
+    Retrieves the bones of a skin of a GLTF2 object.
+    :param gltf: GLTF2 object.
+    :param skin: Skin to retrieve the bones for.
+    :return: Tuple containing the root bone, root transform, and a dictionary of bones with bone names as keys.
     """
+
     def build_bone_hierarchy(gltf: GLTF2, node_id: int, inv_binds: Dict[int, np.ndarray],
                              bone_dict: Dict[str, Bone]) -> Bone:
         """
-
-        :param gltf:
-        :param node_id:
-        :param inv_binds:
-        :param bone_dict:
-        :return:
+        Recursively builds the bone hierarchy.
+        :param gltf: GLTF2 object.
+        :param node_id: Current node ID.
+        :param inv_binds: Dictionary of inverse bind matrices.
+        :param bone_dict: Dictionary to store the bones.
+        :return: Root bone of the hierarchy.
         """
-
         node = gltf.nodes[node_id]
 
         inverse_bind_matrix = inv_binds.get(node_id, None)

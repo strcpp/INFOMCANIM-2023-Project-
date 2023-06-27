@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from render.model import Model
 
+from typing import Optional
+
 
 class Entity:
     """
@@ -44,6 +46,11 @@ class Scene:
         self.entities.append(Entity(name, model))
 
     def add_model(self, name: str) -> str:
+        """
+        Adds a model to the list of models that are currently being rendered.
+        :param name: Model name.
+        :return: Unique model name identifier.
+        """
         self.model_counter += 1
         unique_name = f'{str(self.model_counter)} - {name}'
         self.add_entity(unique_name, Model(self.app, name))
@@ -51,7 +58,7 @@ class Scene:
 
         return unique_name
 
-    def find(self, name: str) -> Model:
+    def find(self, name: str) -> Optional[Model]:
         """
         Finds a model in the scene based on its name.
         :param name: Name of the model to find.
@@ -62,7 +69,7 @@ class Scene:
                 return entity.model
         return None
 
-    def set_model(self, model_name: str):
+    def set_model(self, model_name: str) -> None:
         """
         Initializes the current active model, associates it with an entity and retrieves its animations.
         :param model_name: Name of the model to initialize.
@@ -101,8 +108,10 @@ class Scene:
         pass
 
     @abstractmethod
-    def key_event(self, key: int, action: str):
+    def key_event(self, key: int, action: str) -> None:
         """
         Abstract method for key events.
+        :param key: Key code or identifier associated with the key event.
+        :param action: Action performed on the key (e.g., "press", "release").
         """
         pass

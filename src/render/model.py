@@ -70,7 +70,7 @@ class Model:
         self.n_keyframes = self.get_number_of_keyframes()
         self.max_keyframes = self.get_number_of_keyframes()
 
-    def update(self, dt: float, interpolation_method: str):
+    def update(self, dt: float, interpolation_method: str) -> None:
         """
         Updates the model's pose.
         :param dt: Current timestamp
@@ -86,11 +86,20 @@ class Model:
  
         self.current_animation.set_pose(self.timestamp, interpolation_method, self.n_keyframes)
 
-    def move(self, dx: float, dz: float):
+    def move(self, dx: float, dz: float) -> None:
+        """
+        Moves the model on the x and z axes.
+        :param dx: Amount of translation on the x-axis.
+        :param dz: Amount of translation on the z-axis.
+        """
         self.translation += Vector3([dx, 0, dz])
         self.calculate_model_matrix()
 
-    def rotate_y(self, d: float):
+    def rotate_y(self, d: float) -> None:
+        """
+        Rotates the model.
+        :param d: Amount of rotation.
+        """
         self.rotation = Quaternion.from_y_rotation(d) * self.rotation
         self.calculate_model_matrix()
 
@@ -133,7 +142,10 @@ class Model:
             return self.current_animation.root_bone.get_number_of_keyframes()
         return 0
 
-    def calculate_model_matrix(self):
+    def calculate_model_matrix(self) -> None:
+        """
+        Calculates the model's transformation matrix.
+        """
         trans = Matrix44.from_translation(self.translation)
         rot = Matrix44.from_quaternion(Quaternion(self.rotation))
         scale = Matrix44.from_scale(self.scale)

@@ -1,5 +1,5 @@
 import numpy as np
-from pyrr import Quaternion, Vector3, Matrix44
+from pyrr import Matrix44
 from render.shaders import Shaders
 import moderngl
 from typing import List, Tuple
@@ -8,6 +8,11 @@ MAX_LINE_BUFFER_SIZE = 5000
 
 
 def build_lines(lines: List[Tuple[Matrix44, Matrix44]]) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Builds a line mesh from a list of line segments defined by their start and end points.
+    :param lines: List of tuples, where each tuple contains the start and end points of a line segment.
+    :returns: Tuple containing the vertex data and index data of the line mesh.
+    """
     vertices = []
     indices = []
     index_counter = 0
@@ -78,6 +83,7 @@ class Lines:
         Draws the skeleton lines.
         :param proj_matrix: Projection matrix.
         :param view_matrix: View matrix.
+        :param model_matrix: Transformation matrix.
         """
         self.line_prog["img_width"].value = self.app.window_size[0]
         self.line_prog["img_height"].value = self.app.window_size[1]
