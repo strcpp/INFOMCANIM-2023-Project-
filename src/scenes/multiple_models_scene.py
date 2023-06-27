@@ -58,7 +58,7 @@ class MultipleModelsScene(Scene):
         pygame.mixer.init()
 
         for track in self.tracks:
-            path = os.path.join("resources/tracks", track + ".mp3")
+            path = os.path.join("../resources/tracks", track + ".mp3")
             self.sounds[track] = pygame.mixer.Sound(path)
 
     def unload(self) -> None:
@@ -341,10 +341,10 @@ class MultipleModelsScene(Scene):
 
         # Determine the label and color for the play/stop button
         if is_playing:
-            play_stop_button_label = "Stop"
+            play_stop_button_label = "Stop##Track"
             play_stop_button_color = (0.694, 0.282, 0.282, 1.0)  # Red color for Stop button
         else:
-            play_stop_button_label = "Play"
+            play_stop_button_label = "Play##Track"
             play_stop_button_color = (0.282, 0.361, 0.306, 1.0)  # Green color for Play button
 
         # Set the button color
