@@ -58,7 +58,7 @@ class MultipleModelsScene(Scene):
         pygame.mixer.init()
 
         for track in self.tracks:
-            path = os.path.join("../resources/tracks", track + ".mp3")
+            path = os.path.join("resources", "tracks", f"{track}.mp3")
             self.sounds[track] = pygame.mixer.Sound(path)
 
     def unload(self) -> None:
