@@ -99,7 +99,7 @@ class BasicScene(Scene):
         pygame.mixer.init()
 
         for track in self.tracks:
-            path = os.path.join("../resources/tracks", track + ".mp3")
+            path =  os.path.join("resources", "tracks", f"{track}.mp3")
             self.sounds[track] = pygame.mixer.Sound(path)
 
         pygame.mixer.Channel(0).play(self.sounds[self.selected_track], loops=-1)
